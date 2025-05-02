@@ -1,0 +1,2 @@
+D:/veerangana_app/android/app/.cxx/Debug/272q5g3y/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/veerangana_app/android/app/.cxx/Debug/272q5g3y/armeabi-v7a/CMakeFiles/rebuild_cache.dir
