@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "50583172701",
+    "project_id": "veerangana-a8a70",
+    "storage_bucket": "veerangana-a8a70.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:50583172701:android:0ae02ec812a8171d0effb4",
+        "android_client_info": {
+          "package_name": "com.example.veerangana"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAb-9mLUwtQmHd9KsPE2xS5_PlVM3B1KhM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
