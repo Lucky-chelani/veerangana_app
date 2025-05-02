@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'otp_screen.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
@@ -9,6 +11,7 @@ class StartScreen extends StatefulWidget {
 
 class _StartScreenState extends State<StartScreen> {
   final TextEditingController phoneController = TextEditingController();
+  bool isSendingOtp = false;
 
   @override
   void dispose() {
@@ -16,18 +19,51 @@ class _StartScreenState extends State<StartScreen> {
     super.dispose();
   }
 
-  void handleGetStarted() {
-    final phone = phoneController.text;
-    if (phone.isNotEmpty && phone.length >= 10) {
-      // You can navigate to the Home screen or next verification step here
+  void handleGetStarted() async {
+    final phone = phoneController.text.trim();
+
+    if (phone.isEmpty || phone.length != 10 || !RegExp(r'^[0-9]+$').hasMatch(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Phone number: $phone")),
+        const SnackBar(content: Text("Please enter a valid 10-digit phone number")),
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a valid phone number")),
-      );
+      return;
     }
+
+    setState(() {
+      isSendingOtp = true;
+    });
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: '+91$phone',
+      verificationCompleted: (PhoneAuthCredential credential) {
+        // Optional: Auto sign-in
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        setState(() {
+          isSendingOtp = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Verification failed: ${e.message}")),
+        );
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        setState(() {
+          isSendingOtp = false;
+        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OtpScreen(
+              verificationId: verificationId,
+              phone: phone,
+            ),
+          ),
+        );
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        // Optional: Handle timeout
+      },
+    );
   }
 
   @override
@@ -54,7 +90,7 @@ class _StartScreenState extends State<StartScreen> {
 
               // Logo
               Image.asset(
-                'assets/hack.jpeg', // Make sure this exists in your assets folder
+                'assets/hack.jpeg',
                 height: 120,
               ),
               const SizedBox(height: 40),
@@ -77,7 +113,7 @@ class _StartScreenState extends State<StartScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: handleGetStarted,
+                  onPressed: isSendingOtp ? null : handleGetStarted,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -85,10 +121,16 @@ class _StartScreenState extends State<StartScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text(
-                    "Get Started",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
+                  child: isSendingOtp
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text(
+                          "Get Started",
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
                 ),
               ),
 
