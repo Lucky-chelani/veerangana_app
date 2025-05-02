@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'details.dart';
+
 
 class OtpScreen extends StatefulWidget {
   final String verificationId;
@@ -16,31 +18,39 @@ class _OtpScreenState extends State<OtpScreen> {
   bool isVerifying = false;
 
   void verifyOtp() async {
-    setState(() {
-      isVerifying = true;
-    });
+  setState(() {
+    isVerifying = true;
+  });
 
-    final credential = PhoneAuthProvider.credential(
-      verificationId: widget.verificationId,
-      smsCode: otpController.text.trim(),
+  final credential = PhoneAuthProvider.credential(
+    verificationId: widget.verificationId,
+    smsCode: otpController.text.trim(),
+  );
+
+  try {
+    await FirebaseAuth.instance.signInWithCredential(credential);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Phone number verified!")),
     );
 
-    try {
-      await FirebaseAuth.instance.signInWithCredential(credential);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Phone number verified!")),
-      );
-      // Navigate to Home or main screen
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid OTP")),
-      );
-    }
-
-    setState(() {
-      isVerifying = false;
-    });
+    // Navigate to the details screen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailsScreen(phone: widget.phone),
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Invalid OTP")),
+    );
   }
+
+  setState(() {
+    isVerifying = false;
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
