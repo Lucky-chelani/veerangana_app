@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:contacts_service/contacts_service.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:veerangana/screens/home_screen.dart';
 
 class EmergencyContactScreen extends StatefulWidget {
   final String userPhone;
@@ -19,21 +20,21 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
   @override
   void initState() {
     super.initState();
-    _checkPermissionAndLoadExistingContacts();
+    _loadExistingContacts();
   }
 
-  Future<void> _checkPermissionAndLoadExistingContacts() async {
-    // Check if we have existing contacts saved for this user
+  Future<void> _loadExistingContacts() async {
     try {
+      // Fetch existing emergency contacts from Firestore
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.userPhone)
           .get();
-      
+
       if (userDoc.exists && userDoc.data()!.containsKey('emergencyContacts')) {
         final existingContacts = List<Map<String, dynamic>>.from(
             userDoc.data()!['emergencyContacts'] ?? []);
-        
+
         setState(() {
           contacts.clear();
           for (var contact in existingContacts) {
@@ -46,17 +47,16 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
       }
     } catch (e) {
       print('Error loading existing contacts: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading contacts: $e")),
+      );
     }
   }
 
   Future<void> _askContactsPermission() async {
-    setState(() {
-      isLoading = true;
-    });
-    
     // Request contacts permission
     final status = await Permission.contacts.request();
-    
+
     if (status.isGranted) {
       await _pickContacts();
     } else {
@@ -67,99 +67,119 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
         ),
       );
     }
-    
-    setState(() {
-      isLoading = false;
-    });
   }
 
   Future<void> _pickContacts() async {
     try {
-      // Get all contacts
-      Iterable<Contact> phoneContacts = await ContactsService.getContacts();
-      
-      // Show contact picker
+      // Fetch all contacts
+      Iterable<Contact> phoneContacts = await FlutterContacts.getContacts(
+        withProperties: true,
+      );
+
+      // Create a list to hold the filtered contacts
+      List<Contact> filteredContacts = phoneContacts.toList();
+
+      // Show contact picker with search functionality
       await showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        builder: (context) => DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          minChildSize: 0.5,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (context, scrollController) => Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  "Select Emergency Contacts",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Divider(),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: phoneContacts.length,
-                  itemBuilder: (context, index) {
-                    Contact contact = phoneContacts.elementAt(index);
-                    String phone = "";
-                    
-                    if (contact.phones != null && contact.phones!.isNotEmpty) {
-                      phone = contact.phones!.first.value ?? "";
-                      // Clean the phone number
-                      phone = phone.replaceAll(RegExp(r'[^\d+]'), '');
-                    }
-                    
-                    return ListTile(
-                      leading: CircleAvatar(
-                        child: contact.avatar != null && contact.avatar!.isNotEmpty
-                            ? ClipOval(
-                                child: Image.memory(
-                                  contact.avatar!,
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : Text(contact.displayName?[0] ?? "?"),
+        builder: (context) {
+          String searchQuery = "";
+
+          return StatefulBuilder(
+            builder: (context, setModalState) {
+              return Column(
+                children: [
+                  // Search Bar
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: "Search contacts",
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                      title: Text(contact.displayName ?? "Unknown"),
-                      subtitle: Text(phone),
-                      enabled: phone.isNotEmpty,
-                      onTap: () {
-                        Navigator.pop(context);
-                        
-                        // Check if contact already exists
-                        bool exists = contacts.any((c) => c['phone'] == phone);
-                        if (!exists) {
-                          setState(() {
-                            contacts.add({
-                              'name': contact.displayName ?? "Unknown",
-                              'phone': phone,
-                            });
-                          });
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Contact already added"),
-                            ),
-                          );
-                        }
+                      onChanged: (query) {
+                        searchQuery = query.toLowerCase();
+                        setModalState(() {
+                          filteredContacts = phoneContacts
+                              .where((contact) =>
+                                  contact.displayName != null &&
+                                  contact.displayName!
+                                      .toLowerCase()
+                                      .contains(searchQuery))
+                              .toList();
+                        });
                       },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+                    ),
+                  ),
+                  const Divider(),
+
+                  // Contact List
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filteredContacts.length,
+                      itemBuilder: (context, index) {
+                        Contact contact = filteredContacts[index];
+                        String phone = "";
+
+                        if (contact.phones.isNotEmpty) {
+                          phone = contact.phones.first.number ?? "";
+                          // Clean the phone number
+                          phone = phone.replaceAll(RegExp(r'[^\d+]'), '');
+                        }
+
+                        return ListTile(
+                          leading: CircleAvatar(
+                            child: contact.photo != null
+                                ? ClipOval(
+                                    child: Image.memory(
+                                      contact.photo!,
+                                      width: 40,
+                                      height: 40,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : Text(contact.displayName?[0] ?? "?"),
+                          ),
+                          title: Text(contact.displayName ?? "Unknown"),
+                          subtitle: Text(phone),
+                          enabled: phone.isNotEmpty,
+                          onTap: () {
+                            Navigator.pop(context);
+
+                            // Check if contact already exists
+                            bool exists =
+                                contacts.any((c) => c['phone'] == phone);
+                            if (!exists) {
+                              setState(() {
+                                contacts.add({
+                                  'name': contact.displayName ?? "Unknown",
+                                  'phone': phone,
+                                });
+                              });
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Contact already added"),
+                                ),
+                              );
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -195,12 +215,13 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
         ),
       );
 
-      // Navigate to next screen - you can add your navigation code here
-      // Navigator.pushReplacement(
-      //   context, 
-      //   MaterialPageRoute(builder: (context) => NextScreen()),
-      // );
-      
+      // Navigate to HomeScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const HomeScreen(),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error saving contacts: $e")),
@@ -231,7 +252,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Add from contacts button
                 ElevatedButton.icon(
                   onPressed: _askContactsPermission,
@@ -241,9 +262,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                     minimumSize: const Size.fromHeight(50),
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Display selected contacts
                 Expanded(
                   child: contacts.isEmpty
@@ -286,9 +307,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                           },
                         ),
                 ),
-                
+
                 const SizedBox(height: 10),
-                
+
                 // Save button
                 ElevatedButton(
                   onPressed: isLoading ? null : saveContactsToFirestore,
@@ -304,11 +325,11 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
               ],
             ),
           ),
-          
+
           // Loading indicator
           if (isLoading)
             Container(
-              color: Colors.black.withValues(alpha: .3),
+              color: Colors.black.withOpacity(0.3),
               child: const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
