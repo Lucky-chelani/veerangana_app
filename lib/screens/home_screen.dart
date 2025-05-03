@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     switch (index) {
       case 1:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const MapScreen(locationUrl: "https://maps.google.com/?q=23.456,77.123",)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const MapScreen()));
         break;
       case 2:
         Navigator.push(context, MaterialPageRoute(builder: (context) => const EmergencyContactScreen(userPhone: '',)));
