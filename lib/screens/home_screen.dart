@@ -3,6 +3,9 @@ import '../widgets/custom_bottom_nav.dart';
 import 'map_screen.dart';
 import 'contacts.dart';
 import 'details.dart'; 
+import 'package:vibration/vibration.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -169,7 +172,21 @@ Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
           children: [
-            buildGridButton("Panic Mode", "assets/download.png", () {}),
+            // buildGridButton("Panic Mode", "assets/download.png", () {}),
+            buildGridButton("Panic Mode", "assets/download.png", () async {
+  // Vibrate the phone
+  if (await Vibration.hasVibrator() ?? false) {
+    Vibration.vibrate(duration: 1000); // 1 second
+  }
+
+  // Play beep sound
+  final player = AssetsAudioPlayer();
+  player.open(
+    Audio("assets/sounds/beep.mp3"),
+    autoStart: true,
+  );
+}),
+
             buildGridButton("Police Contact", "assets/download (1).png", () {}),
             buildGridButton("SOS", "assets/download (2).png", () {}),
             buildGridButton("Live Tracking", "assets/download (3).png", () {}),
