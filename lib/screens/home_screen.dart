@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_bottom_nav.dart'; // adjust path based on your structure
+import '../widgets/custom_bottom_nav.dart';
+import 'map_screen.dart';
+import 'contacts.dart';
+import 'details.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -12,22 +15,21 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
+    if (_selectedIndex == index) return;
+
     setState(() {
       _selectedIndex = index;
     });
 
     switch (index) {
-      case 0:
-        // Already on Home
-        break;
       case 1:
-        Navigator.pushNamed(context, '/map');
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const MapScreen()));
         break;
       case 2:
-        Navigator.pushNamed(context, '/contacts');
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const EmergencyContactScreen(userPhone: '',)));
         break;
       case 3:
-        Navigator.pushNamed(context, '/settings');
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const DetailsScreen(phone: '',)));
         break;
     }
   }
@@ -55,8 +57,21 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFFFDEEFF),
       appBar: AppBar(
         backgroundColor: Colors.purple,
-        title: const Text("Women Safety App"),
         centerTitle: true,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: const [
+            Text(
+              "Women Safety App",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 2),
+            Text(
+              "Your safety, our priority",
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+            ),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -65,14 +80,14 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
           children: [
-            buildGridButton("Panic Mode", "assets/hack.jpeg", () {}),
-            buildGridButton("Police Contact", "assets/hack.jpeg", () {}),
-            buildGridButton("SOS", "assets/hack.jpeg", () {}),//sos
-            buildGridButton("Live Tracking", "assets/hack.jpeg", () {}),//tracking
-            buildGridButton("Voice Recording", "assets/hack.jpeg", () {}),//voice
-            buildGridButton("Video Recording", "assets/hack.jpeg", () {}),//video
-            buildGridButton("Emergency Contacts", "assets/hack.jpeg", () {}),//emergency
-            buildGridButton("Logout", "assets/hack.jpeg", () {}),//logout
+            buildGridButton("Panic Mode", "assets/download.png", () {}),
+            buildGridButton("Police Contact", "assets/download (1).png", () {}),
+            buildGridButton("SOS", "assets/download (2).png", () {}),
+            buildGridButton("Live Tracking", "assets/download (3).png", () {}),
+            buildGridButton("Voice Recording", "assets/download (4).png", () {}),
+            buildGridButton("Video Recording", "assets/download (5).png", () {}),
+            buildGridButton("Emergency Contacts", "assets/download (6).png", () {}),
+            buildGridButton("Logout", "assets/hack.jpeg", () {}),
           ],
         ),
       ),

@@ -23,7 +23,7 @@ class WomenSafetyApp extends StatelessWidget {
         primarySwatch: Colors.purple,
         fontFamily: 'Roboto',
       ),
-      home: const HomeScreen(),
+      home: const StartScreen(),
     );
   }
 }
