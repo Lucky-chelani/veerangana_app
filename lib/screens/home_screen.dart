@@ -3,8 +3,8 @@ import '../widgets/custom_bottom_nav.dart';
 import 'map_screen.dart';
 import 'contacts.dart';
 import 'details.dart'; 
-import 'package:vibration/vibration.dart';
-import 'package:assets_audio_player/assets_audio_player.dart';
+//import 'package:vibration/vibration.dart';
+//import 'package:assets_audio_player/assets_audio_player.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     switch (index) {
       case 1:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const MapScreen(locationUrl: "https://maps.google.com/?q=23.456,77.123",)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const MapScreen()));
         break;
       case 2:
         Navigator.push(context, MaterialPageRoute(builder: (context) => const EmergencyContactScreen(userPhone: '',)));
@@ -173,19 +173,20 @@ Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
           mainAxisSpacing: 12,
           children: [
             // buildGridButton("Panic Mode", "assets/download.png", () {}),
-            buildGridButton("Panic Mode", "assets/download.png", () async {
+            buildGridButton("Panic Mode", "assets/download.png",() {}),
+            // () async {
   // Vibrate the phone
-  if (await Vibration.hasVibrator() ?? false) {
-    Vibration.vibrate(duration: 1000); // 1 second
-  }
+//   if (await Vibration.hasVibrator() ?? false) {
+//     Vibration.vibrate(duration: 1000); // 1 second
+//   }
 
-  // Play beep sound
-  final player = AssetsAudioPlayer();
-  player.open(
-    Audio("assets/sounds/beep.mp3"),
-    autoStart: true,
-  );
-}),
+//   // Play beep sound
+//   final player = AssetsAudioPlayer();
+//   player.open(
+//     Audio("assets/sounds/beep.mp3"),
+//     autoStart: true,
+//   );
+// }),
 
             buildGridButton("Police Contact", "assets/download (1).png", () {}),
             buildGridButton("SOS", "assets/download (2).png", () {}),
