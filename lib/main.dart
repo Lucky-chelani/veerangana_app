@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:veerangana/screens/home_screen.dart';
 import 'screens/start_screen.dart';
 
 
@@ -21,7 +22,7 @@ class WomenSafetyApp extends StatelessWidget {
         primarySwatch: Colors.purple,
         fontFamily: 'Roboto',
       ),
-      home: const DetailsScreen(phone: '6264610466'),
+      home: const StartScreen(),
     );
   }
 }
