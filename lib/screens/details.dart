@@ -1,4 +1,7 @@
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:veerangana/screens/contacts.dart' as contacts;
+import 'package:veerangana/screens/home_screen.dart';
 
 class DetailsScreen extends StatefulWidget {
   final String phone;
@@ -16,8 +19,48 @@ class _DetailsScreenState extends State<DetailsScreen> {
   final TextEditingController addressController = TextEditingController();
 
   String selectedGender = 'Female';
-
   final List<String> genders = ['Female', 'Male', 'Other'];
+
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkExistingDetails();
+  }
+
+  Future<void> _checkExistingDetails() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Fetch user details from Firebase
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.phone)
+          .get();
+
+      if (userDoc.exists) {
+        // If details exist, navigate directly to HomeScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const HomeScreen(),
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle error (optional)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error checking user details: $e")),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,57 +69,119 @@ class _DetailsScreenState extends State<DetailsScreen> {
         title: const Text("Your Details"),
         backgroundColor: Colors.purple,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildLabel("Phone Number"),
-            buildReadOnlyField(widget.phone),
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildLabel("Phone Number"),
+                buildReadOnlyField(widget.phone),
 
-            buildLabel("Name"),
-            buildTextField(nameController, "Enter your name"),
+                buildLabel("Name"),
+                buildTextField(nameController, "Enter your name"),
 
-            buildLabel("Alternative Phone Number"),
-            buildTextField(altPhoneController, "Enter alternative phone number"),
+                buildLabel("Alternative Phone Number"),
+                buildTextField(altPhoneController, "Enter alternative phone number"),
 
-            buildLabel("Gender"),
-            DropdownButtonFormField<String>(
-              value: selectedGender,
-              items: genders.map((gender) {
-                return DropdownMenuItem(value: gender, child: Text(gender));
-              }).toList(),
-              onChanged: (value) => setState(() => selectedGender = value!),
-              decoration: const InputDecoration(border: OutlineInputBorder()),
+                buildLabel("Gender"),
+                DropdownButtonFormField<String>(
+                  value: selectedGender,
+                  items: genders.map((gender) {
+                    return DropdownMenuItem(value: gender, child: Text(gender));
+                  }).toList(),
+                  onChanged: (value) => setState(() => selectedGender = value!),
+                  decoration: const InputDecoration(border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+
+                buildLabel("Age"),
+                buildTextField(ageController, "Enter your age", TextInputType.number),
+
+                buildLabel("Address"),
+                buildTextField(addressController, "Enter your address", TextInputType.multiline),
+
+                const SizedBox(height: 24),
+
+                // Save and Navigate Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : saveDetailsAndNavigate,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        : const Text(
+                            "Save & Continue",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+          ),
 
-            buildLabel("Age"),
-            buildTextField(ageController, "Enter your age", TextInputType.number),
-
-            buildLabel("Address"),
-            buildTextField(addressController, "Enter your address", TextInputType.multiline),
-
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: handleAddEmergencyContact,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
-                child: const Text("Add Emergency Contact"),
+          // Loading Overlay
+          if (isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
+                ),
               ),
-            )
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
 
-  void handleAddEmergencyContact() {
-    // You can validate and store data here or navigate to the next screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Proceed to add emergency contact")),
-    );
+  Future<void> saveDetailsAndNavigate() async {
+    final userDetails = {
+      'phone': widget.phone,
+      'name': nameController.text,
+      'altPhone': altPhoneController.text,
+      'gender': selectedGender,
+      'age': ageController.text,
+      'address': addressController.text,
+    };
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Save details to Firebase
+      await FirebaseFirestore.instance.collection('users').doc(widget.phone).set(userDetails);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Details saved successfully!")),
+      );
+
+      // Navigate to EmergencyContactScreen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => contacts.EmergencyContactScreen(userPhone: widget.phone),
+        ),
+      );
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to save details: $e")),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Widget buildLabel(String text) {
