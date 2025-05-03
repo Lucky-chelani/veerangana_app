@@ -34,45 +34,134 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        elevation: 4,
+  // Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
+  //   return GestureDetector(
+  //     onTap: onTap,
+  //     child: Card(
+  //       elevation: 4,
+  //       child: Column(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           Image.asset(assetPath, height: 100),
+  //           const SizedBox(height: 8),
+  //           Text(label, textAlign: TextAlign.center),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.white,
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(assetPath, height: 50),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12), // Adjust this for more/less roundness
+              child: Image.asset(
+                assetPath,
+                height: 110,
+                width: 110,
+                fit: BoxFit.cover,
+              ),
+            ),
+            // Image.asset(assetPath, height: 100, width: 100, fit: BoxFit.cover),
             const SizedBox(height: 8),
-            Text(label, textAlign: TextAlign.center),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDEEFF),
-      appBar: AppBar(
-        backgroundColor: Colors.purple,
-        centerTitle: true,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: const [
-            Text(
-              "Women Safety App",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 2),
-            Text(
-              "Your safety, our priority",
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-            ),
-          ],
+      //appbar
+      appBar: PreferredSize(
+  preferredSize: const Size.fromHeight(100),
+  child: AppBar(
+    elevation: 6,
+    backgroundColor: Colors.transparent,
+    flexibleSpace: Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF9C27B0), Color(0xFFE040FB)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(30),
         ),
       ),
+    ),
+    centerTitle: true,
+    title: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        Text(
+          "Women Safety App",
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 4),
+        Text(
+          "Your safety, our priority",
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: Colors.white70,
+          ),
+        ),
+      ],
+    ),
+    leading: IconButton(
+      icon: const Icon(Icons.arrow_back, color: Colors.white),
+      onPressed: () {
+        // Add navigation logic
+      },
+    ),
+  ),
+),
+
+      // appBar: AppBar(
+      //   backgroundColor: Colors.purple,
+      //   centerTitle: true,
+      //   title: Column(
+      //     crossAxisAlignment: CrossAxisAlignment.center,
+      //     children: const [
+      //       Text(
+      //         "Women Safety App",
+      //         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      //       ),
+      //       SizedBox(height: 2),
+      //       Text(
+      //         "Your safety, our priority",
+      //         style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+      //       ),
+      //     ],
+      //   ),
+      // ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: GridView.count(
