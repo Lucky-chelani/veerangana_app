@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/location_service.dart';
+import 'package:veerangana/widgets/panicmode.dart';
 import '../widgets/custom_bottom_nav.dart';
 import 'map_screen.dart';
 import 'contacts.dart';
@@ -22,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final LocationService _locationService = LocationService();
+  final PanicModeService _panicModeService = PanicModeService();
   String? userPhone; // Initialize LocationService
   @override
   void initState() {
@@ -259,12 +261,21 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSpacing: 12,
           children: [
             // buildGridButton("Panic Mode", "assets/download.png", () {}),
-            buildGridButton("Panic Mode", "assets/download.png", () async {
-              // Vibrate the phone
-              if (await Vibration.hasVibrator() ?? false) {
-                Vibration.vibrate(duration: 1000); // 1 second
-              }
-            }),
+           buildGridButton("Panic Mode", "assets/download.png", () async {
+  if (userPhone != null) {
+    await _panicModeService.activatePanicMode(userPhone!);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('User phone number not found.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}),
+buildGridButton("Stop Panic Mode", "assets/download.png", () {
+  _panicModeService.deactivatePanicMode();
+}),
 
             // Play beep sound
 //   final player = AssetsAudioPlayer();
