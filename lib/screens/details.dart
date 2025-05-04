@@ -17,6 +17,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
   final TextEditingController altPhoneController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  //final TextEditingController cityController = TextEditingController();
 
   String selectedGender = 'Female';
   final List<String> genders = ['Female', 'Male', 'Other'];
@@ -99,6 +100,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 buildLabel("Age"),
                 buildTextField(ageController, "Enter your age", TextInputType.number),
 
+                //buildLabel("City"),
+                //buildTextField(cityController, "Enter your city"),
+
                 buildLabel("Address"),
                 buildTextField(addressController, "Enter your address", TextInputType.multiline),
 
@@ -149,6 +153,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
       'altPhone': altPhoneController.text,
       'gender': selectedGender,
       'age': ageController.text,
+      //'city': cityController.text,
       'address': addressController.text,
     };
 

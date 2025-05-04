@@ -99,22 +99,23 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isRecording = false;
   String? _recordingPath;
 
-  Future<void> _startRecording() async {
-  // Request microphone and storage permission
+ Future<void> _startRecording() async {
   final micStatus = await Permission.microphone.request();
   final storageStatus = await Permission.storage.request();
 
+  print('Mic permission: $micStatus');
+  print('Storage permission: $storageStatus');
+
   if (micStatus != PermissionStatus.granted || storageStatus != PermissionStatus.granted) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Microphone and storage permissions are required.')),
+      const SnackBar(
+        content: Text('Microphone and storage permissions are required.'),
+      ),
     );
     return;
   }
 
-  // Save to public directory: /storage/emulated/0/Veerangana/Recordings/
   final Directory dir = Directory('/storage/emulated/0/Veerangana/Recordings');
-
-  // Create directory if it doesn't exist
   if (!await dir.exists()) {
     await dir.create(recursive: true);
   }
@@ -131,7 +132,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _isRecording = true;
     _recordingPath = path;
   });
+
+  print('Recording started at: $path');
 }
+
 
 
   Future<void> _stopRecording() async {
