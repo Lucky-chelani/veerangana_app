@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'details.dart';
 
 
@@ -29,6 +30,12 @@ class _OtpScreenState extends State<OtpScreen> {
 
   try {
     await FirebaseAuth.instance.signInWithCredential(credential);
+
+    // ✅ Save phone number to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userPhone', widget.phone);
+
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Phone number verified!")),
     );
