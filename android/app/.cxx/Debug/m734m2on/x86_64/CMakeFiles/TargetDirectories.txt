@@ -1,0 +1,2 @@
+D:/veerangana_app/android/app/.cxx/Debug/m734m2on/x86_64/CMakeFiles/edit_cache.dir
+D:/veerangana_app/android/app/.cxx/Debug/m734m2on/x86_64/CMakeFiles/rebuild_cache.dir

@@ -7,7 +7,10 @@ import 'map_screen.dart';
 import 'contacts.dart';
 import 'details.dart';
 import 'package:vibration/vibration.dart';
-
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -89,18 +92,71 @@ class _HomeScreenState extends State<HomeScreen> {
   //   );
   // }
 
-Future<void> _makePhoneCall(String phoneNumber) async {
-  bool? res = await FlutterPhoneDirectCaller.callNumber(phoneNumber);
-  if (res == false) {
-    // If unable to make the call
+  //audio recording
+  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  bool _isRecording = false;
+  String? _recordingPath;
+
+  Future<void> _startRecording() async {
+  // Request microphone and storage permission
+  final micStatus = await Permission.microphone.request();
+  final storageStatus = await Permission.storage.request();
+
+  if (micStatus != PermissionStatus.granted || storageStatus != PermissionStatus.granted) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Could not make the phone call'),
-        backgroundColor: Colors.red,
-      ),
+      const SnackBar(content: Text('Microphone and storage permissions are required.')),
+    );
+    return;
+  }
+
+  // Save to public directory: /storage/emulated/0/Veerangana/Recordings/
+  final Directory dir = Directory('/storage/emulated/0/Veerangana/Recordings');
+
+  // Create directory if it doesn't exist
+  if (!await dir.exists()) {
+    await dir.create(recursive: true);
+  }
+
+  final String path = '${dir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.aac';
+
+  await _recorder.openRecorder();
+  await _recorder.startRecorder(
+    toFile: path,
+    codec: Codec.aacADTS,
+  );
+
+  setState(() {
+    _isRecording = true;
+    _recordingPath = path;
+  });
+}
+
+
+  Future<void> _stopRecording() async {
+    await _recorder.stopRecorder();
+    await _recorder.closeRecorder();
+
+    setState(() {
+      _isRecording = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Recording saved at: $_recordingPath')),
     );
   }
-}
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    bool? res = await FlutterPhoneDirectCaller.callNumber(phoneNumber);
+    if (res == false) {
+      // If unable to make the call
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not make the phone call'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
     return GestureDetector(
@@ -221,12 +277,20 @@ Future<void> _makePhoneCall(String phoneNumber) async {
             // buildGridButton("Police Contact", "assets/download (1).png", () {}),
             buildGridButton("Police Contact", "assets/download (1).png", () {
               // Call police emergency number (100)
-              _makePhoneCall('100'); 
+              _makePhoneCall('100');
             }),
             buildGridButton("SOS", "assets/download (2).png", () {}),
             buildGridButton("Live Tracking", "assets/download (3).png", () {}),
-            buildGridButton(
-                "Voice Recording", "assets/download (4).png", () {}),
+            buildGridButton("Voice Recording", "assets/download (4).png",
+                () async {
+              if (_isRecording) {
+                await _stopRecording();
+                print('is recording voice');
+              } else {
+                await _startRecording();
+              }
+            }),
+
             buildGridButton(
                 "Video Recording", "assets/download (5).png", () {}),
             buildGridButton(
