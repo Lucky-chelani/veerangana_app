@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/location_service.dart';
 import '../widgets/custom_bottom_nav.dart';
@@ -6,8 +7,7 @@ import 'map_screen.dart';
 import 'contacts.dart';
 import 'details.dart';
 import 'package:vibration/vibration.dart';
-//import 'package:assets_audio_player/assets_audio_player.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -89,24 +89,18 @@ class _HomeScreenState extends State<HomeScreen> {
   //   );
   // }
 
-  Future<void> _makePhoneCall(String phoneNumber) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: phoneNumber,
+Future<void> _makePhoneCall(String phoneNumber) async {
+  bool? res = await FlutterPhoneDirectCaller.callNumber(phoneNumber);
+  if (res == false) {
+    // If unable to make the call
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not make the phone call'),
+        backgroundColor: Colors.red,
+      ),
     );
-
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
-    } else {
-      // If unable to launch the dialer
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not launch phone dialer'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
+}
 
   Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
     return GestureDetector(
@@ -227,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // buildGridButton("Police Contact", "assets/download (1).png", () {}),
             buildGridButton("Police Contact", "assets/download (1).png", () {
               // Call police emergency number (100)
-              _makePhoneCall('100');
+              _makePhoneCall('100'); 
             }),
             buildGridButton("SOS", "assets/download (2).png", () {}),
             buildGridButton("Live Tracking", "assets/download (3).png", () {}),
