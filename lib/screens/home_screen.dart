@@ -66,7 +66,7 @@ Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(12), // Adjust this for more/less roundness
+              borderRadius: BorderRadius.circular(12),
               child: Image.asset(
                 assetPath,
                 height: 110,
@@ -147,24 +147,6 @@ Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
   ),
 ),
 
-      // appBar: AppBar(
-      //   backgroundColor: Colors.purple,
-      //   centerTitle: true,
-      //   title: Column(
-      //     crossAxisAlignment: CrossAxisAlignment.center,
-      //     children: const [
-      //       Text(
-      //         "Women Safety App",
-      //         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      //       ),
-      //       SizedBox(height: 2),
-      //       Text(
-      //         "Your safety, our priority",
-      //         style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
-      //       ),
-      //     ],
-      //   ),
-      // ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: GridView.count(

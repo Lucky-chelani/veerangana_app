@@ -19,44 +19,98 @@ Set<Marker> marker = {};
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
-        myLocationButtonEnabled: false,
-        markers: marker,
-        onMapCreated: (GoogleMapController controller){
-          googleMapController = controller;
-        },
+      // body: GoogleMap(
+      //   myLocationButtonEnabled: false,
+      //   markers: marker,
+      //   onMapCreated: (GoogleMapController controller){
+      //     googleMapController = controller;
+      //   },
         
-        initialCameraPosition: CameraPosition(
-          target: myCurrentLocation,
-          zoom: 14,
+      //   initialCameraPosition: CameraPosition(
+      //     target: myCurrentLocation,
+      //     zoom: 14,
         
-        )
+      //   )
         
-        ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.white,
-          onPressed: ()async{
-            Position position = await currentPosition();
-            googleMapController.animateCamera(CameraUpdate.newCameraPosition(
-              
-              CameraPosition(
-                zoom: 15,
-                target: LatLng(position.latitude, position.longitude),),),);
-            marker.clear();
-            marker.add(Marker(markerId: MarkerId("This is my Location"),
-            position: LatLng(position.latitude, position.longitude)
-            
-            ),
-            );
-            setState(() {
-              
-            });
+      //   ),
 
-          },
-          child: const Icon(Icons.my_location, size: 30,),
-          
-          
+        //updated button 
+        body: Stack(
+  children: [
+    GoogleMap(
+      myLocationButtonEnabled: false,
+      markers: marker,
+      onMapCreated: (GoogleMapController controller) {
+        googleMapController = controller;
+      },
+      initialCameraPosition: CameraPosition(
+        target: myCurrentLocation,
+        zoom: 14,
+      ),
+    ),
+    Positioned(
+      bottom: 30,
+      left: 20,
+      right: 20,
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          backgroundColor: Colors.deepPurple,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
+          elevation: 6,
+        ),
+        icon: const Icon(Icons.my_location, size: 24, color: Colors.white),
+        label: const Text(
+          "Current Location",
+          style: TextStyle(fontSize: 16, color: Colors.white),
+        ),
+        onPressed: () async {
+          Position position = await currentPosition();
+          googleMapController.animateCamera(CameraUpdate.newCameraPosition(
+            CameraPosition(
+              zoom: 15,
+              target: LatLng(position.latitude, position.longitude),
+            ),
+          ));
+          marker.clear();
+          marker.add(Marker(
+            markerId: const MarkerId("This is my Location"),
+            position: LatLng(position.latitude, position.longitude),
+          ));
+          setState(() {});
+        },
+      ),
+    ),
+  ],
+),
+
+
+        // floatingActionButton: FloatingActionButton(
+        //   backgroundColor: Colors.white,
+        //   onPressed: ()async{
+        //     Position position = await currentPosition();
+        //     googleMapController.animateCamera(CameraUpdate.newCameraPosition(
+              
+        //       CameraPosition(
+        //         zoom: 15,
+        //         target: LatLng(position.latitude, position.longitude),),),);
+        //     marker.clear();
+        //     marker.add(Marker(markerId: MarkerId("This is my Location"),
+        //     position: LatLng(position.latitude, position.longitude)
+            
+        //     ),
+        //     );
+        //     setState(() {
+              
+        //     });
+
+        //   },
+        //   child: const Icon(Icons.my_location, size: 30,),
+          
+          
+        //   ),
 
 
 
