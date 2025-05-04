@@ -4,10 +4,10 @@ import 'package:veerangana/location_service.dart';
 import '../widgets/custom_bottom_nav.dart';
 import 'map_screen.dart';
 import 'contacts.dart';
-import 'details.dart'; 
-//import 'package:vibration/vibration.dart';
+import 'details.dart';
+import 'package:vibration/vibration.dart';
 //import 'package:assets_audio_player/assets_audio_player.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -18,17 +18,17 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-   final LocationService _locationService = LocationService();
-   String? userPhone; // Initialize LocationService
+  final LocationService _locationService = LocationService();
+  String? userPhone; // Initialize LocationService
   @override
   void initState() {
     super.initState();
 
     // Start background location updates
-     _fetchUserPhoneAndTrackLocation();
+    _fetchUserPhoneAndTrackLocation();
   }
 
-     Future<void> _fetchUserPhoneAndTrackLocation() async {
+  Future<void> _fetchUserPhoneAndTrackLocation() async {
     final prefs = await SharedPreferences.getInstance();
     userPhone = prefs.getString('userPhone');
 
@@ -50,13 +50,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
     switch (index) {
       case 1:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const MapScreen()));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const MapScreen()));
         break;
       case 2:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const EmergencyContactScreen(userPhone: '',)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const EmergencyContactScreen(
+                      userPhone: '',
+                    )));
         break;
       case 3:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => const DetailsScreen(phone: '',)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const DetailsScreen(
+                      phone: '',
+                    )));
         break;
     }
   }
@@ -78,12 +89,12 @@ class _HomeScreenState extends State<HomeScreen> {
   //   );
   // }
 
-    Future<void> _makePhoneCall(String phoneNumber) async {
+  Future<void> _makePhoneCall(String phoneNumber) async {
     final Uri launchUri = Uri(
       scheme: 'tel',
       path: phoneNumber,
     );
-    
+
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     } else {
@@ -97,45 +108,44 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Colors.white,
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                assetPath,
-                height: 110,
-                width: 110,
-                fit: BoxFit.cover,
+  Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        color: Colors.white,
+        elevation: 4,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  assetPath,
+                  height: 110,
+                  width: 110,
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-            // Image.asset(assetPath, height: 100, width: 100, fit: BoxFit.cover),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+              // Image.asset(assetPath, height: 100, width: 100, fit: BoxFit.cover),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,53 +153,53 @@ Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
       backgroundColor: const Color(0xFFFDEEFF),
       //appbar
       appBar: PreferredSize(
-  preferredSize: const Size.fromHeight(100),
-  child: AppBar(
-    elevation: 6,
-    backgroundColor: Colors.transparent,
-    flexibleSpace: Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF9C27B0), Color(0xFFE040FB)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(30),
+        preferredSize: const Size.fromHeight(100),
+        child: AppBar(
+          elevation: 6,
+          backgroundColor: Colors.transparent,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF9C27B0), Color(0xFFE040FB)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(30),
+              ),
+            ),
+          ),
+          centerTitle: true,
+          title: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text(
+                "Women Safety App",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                "Your safety, our priority",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              // Add navigation logic
+            },
+          ),
         ),
       ),
-    ),
-    centerTitle: true,
-    title: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
-        Text(
-          "Women Safety App",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          "Your safety, our priority",
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w400,
-            color: Colors.white70,
-          ),
-        ),
-      ],
-    ),
-    leading: IconButton(
-      icon: const Icon(Icons.arrow_back, color: Colors.white),
-      onPressed: () {
-        // Add navigation logic
-      },
-    ),
-  ),
-),
 
       body: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -199,14 +209,14 @@ Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
           mainAxisSpacing: 12,
           children: [
             // buildGridButton("Panic Mode", "assets/download.png", () {}),
-            buildGridButton("Panic Mode", "assets/download.png",() {}),
-            // () async {
-  // Vibrate the phone
-//   if (await Vibration.hasVibrator() ?? false) {
-//     Vibration.vibrate(duration: 1000); // 1 second
-//   }
+            buildGridButton("Panic Mode", "assets/download.png", () async {
+              // Vibrate the phone
+              if (await Vibration.hasVibrator() ?? false) {
+                Vibration.vibrate(duration: 1000); // 1 second
+              }
+            }),
 
-//   // Play beep sound
+            // Play beep sound
 //   final player = AssetsAudioPlayer();
 //   player.open(
 //     Audio("assets/sounds/beep.mp3"),
@@ -214,12 +224,19 @@ Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
 //   );
 // }),
 
-            buildGridButton("Police Contact", "assets/download (1).png", () {}),
+            // buildGridButton("Police Contact", "assets/download (1).png", () {}),
+            buildGridButton("Police Contact", "assets/download (1).png", () {
+              // Call police emergency number (100)
+              _makePhoneCall('100');
+            }),
             buildGridButton("SOS", "assets/download (2).png", () {}),
             buildGridButton("Live Tracking", "assets/download (3).png", () {}),
-            buildGridButton("Voice Recording", "assets/download (4).png", () {}),
-            buildGridButton("Video Recording", "assets/download (5).png", () {}),
-            buildGridButton("Emergency Contacts", "assets/download (6).png", () {}),
+            buildGridButton(
+                "Voice Recording", "assets/download (4).png", () {}),
+            buildGridButton(
+                "Video Recording", "assets/download (5).png", () {}),
+            buildGridButton(
+                "Emergency Contacts", "assets/download (6).png", () {}),
             buildGridButton("Logout", "assets/hack.jpeg", () {}),
           ],
         ),
