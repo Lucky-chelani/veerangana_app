@@ -8,18 +8,6 @@ import 'package:veerangana/screens/start_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.android);
-
-  final prefs = await SharedPreferences.getInstance();
-  String? userPhone = prefs.getString('userPhone');
-
-  final locationService = LocationService();
-
-  // ✅ Only start tracking if userPhone exists (i.e. user is logged in)
-  if (userPhone != null && userPhone.isNotEmpty) {
-    await locationService.initializeLocationTracking(userPhone);
-    locationService.startBackgroundLocationUpdates(userPhone);
-  }
-
   runApp(const WomenSafetyApp());
 }
 
