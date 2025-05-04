@@ -1,0 +1,2 @@
+C:/Users/DELL/Documents/Veerangana/veerangana/android/app/.cxx/RelWithDebInfo/4j1y263j/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/DELL/Documents/Veerangana/veerangana/android/app/.cxx/RelWithDebInfo/4j1y263j/armeabi-v7a/CMakeFiles/rebuild_cache.dir
