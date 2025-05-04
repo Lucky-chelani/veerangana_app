@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -33,20 +32,6 @@ class LocationService {
       'latitude': latitude,
       'longitude': longitude,
       'timestamp': FieldValue.serverTimestamp(),
-    });
-  }
-
-  // Starts a background task to update location every 30 minutes
-  Future<void> startBackgroundLocationUpdates(String userPhone) async {
-    Timer.periodic(const Duration(minutes: 30), (timer) async {
-      try {
-        Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-        );
-        await saveLocationToFirebase(userPhone, position.latitude, position.longitude);
-      } catch (e) {
-        print('Failed to update location: $e');
-      }
     });
   }
 }

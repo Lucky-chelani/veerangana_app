@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:veerangana/location_service.dart';
 import '../widgets/custom_bottom_nav.dart';
 import 'map_screen.dart';
 import 'contacts.dart';
@@ -16,6 +18,28 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+   final LocationService _locationService = LocationService();
+   String? userPhone; // Initialize LocationService
+  @override
+  void initState() {
+    super.initState();
+
+    // Start background location updates
+     _fetchUserPhoneAndTrackLocation();
+  }
+
+     Future<void> _fetchUserPhoneAndTrackLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+    userPhone = prefs.getString('userPhone');
+
+    if (userPhone != null) {
+      try {
+        await _locationService.initializeLocationTracking(userPhone!);
+      } catch (e) {
+        print('Error initializing location tracking: $e');
+      }
+    }
+  }
 
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return;
@@ -53,6 +77,26 @@ class _HomeScreenState extends State<HomeScreen> {
   //     ),
   //   );
   // }
+
+    Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      // If unable to launch the dialer
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not launch phone dialer'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
 Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
   return GestureDetector(
     onTap: onTap,
