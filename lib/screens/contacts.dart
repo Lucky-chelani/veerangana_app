@@ -237,8 +237,14 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Emergency Contacts"),
+        title: const Text("Emergency Contacts",
+        style: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),),
         backgroundColor: Colors.purple,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Stack(
         children: [
@@ -329,7 +335,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
           // Loading indicator
           if (isLoading)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),

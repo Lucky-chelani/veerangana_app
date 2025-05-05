@@ -67,9 +67,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Your Details"),
+        title: const Text("Your Details",
+         style: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),),
         backgroundColor: Colors.purple,
-      ),
+        iconTheme: IconThemeData(color: Colors.white),),
+       
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -123,7 +129,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                           )
                         : const Text(
                             "Save & Continue",
-                            style: TextStyle(fontSize: 16),
+                            style: TextStyle(fontSize: 16, color: Colors.white),
                           ),
                   ),
                 ),
@@ -134,7 +140,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
           // Loading Overlay
           if (isLoading)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha:0.3),
               child: const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
