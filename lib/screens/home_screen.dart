@@ -11,6 +11,7 @@ import 'package:vibration/vibration.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
@@ -78,7 +79,39 @@ class _HomeScreenState extends State<HomeScreen> {
         break;
     }
   }
+  //Video Recording
+  Future<void> _recordVideo() async {
+  final cameraStatus = await Permission.camera.request();
+  final micStatus = await Permission.microphone.request();
 
+  if (cameraStatus != PermissionStatus.granted || micStatus != PermissionStatus.granted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Camera and microphone permissions are required')),
+    );
+    await openAppSettings();
+    return;
+  }
+
+  final picker = ImagePicker();
+  final XFile? videoFile = await picker.pickVideo(source: ImageSource.camera);
+
+  if (videoFile == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Video recording cancelled')),
+    );
+    return;
+  }
+
+  final savePath = await getVideoSavePath();
+  final File savedVideo = await File(videoFile.path).copy(savePath);
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Video saved at: ${savedVideo.path}')),
+  );
+}
+
+
+//voice Recording
   Future<void> _startRecording() async {
   final micStatus = await Permission.microphone.request();
 
@@ -112,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
       SnackBar(content: Text('Recording saved at: $_recordingPath')),
     );
   }
-
+//police contact
   Future<void> _makePhoneCall(String phoneNumber) async {
     bool? res = await FlutterPhoneDirectCaller.callNumber(phoneNumber);
     if (res == false) {
@@ -244,6 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             }),
             buildGridButton("Video Recording", "assets/download (5).png", () {
+              _recordVideo();
               // TODO: implement video recording logic
             }),
             buildGridButton("Emergency Contacts", "assets/download (6).png", () {
@@ -275,3 +309,13 @@ Future<String> getRecordingPath() async {
   }
   return '$path/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
 }
+
+Future<String> getVideoSavePath() async {
+  final dir = await getExternalStorageDirectory();
+  final videoDir = Directory('${dir!.path}/Videos');
+  if (!await videoDir.exists()) {
+    await videoDir.create(recursive: true);
+  }
+  return '${videoDir.path}/video_${DateTime.now().millisecondsSinceEpoch}.mp4';
+}
+
