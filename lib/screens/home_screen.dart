@@ -13,6 +13,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+//import 'package:flutter/services.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -63,13 +64,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     switch (index) {
       case 1:
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const MapScreen()));
         break;
       case 2:
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (_) => EmergencyContactScreen(userPhone: userPhone ?? '')));
+                builder: (_) =>
+                    EmergencyContactScreen(userPhone: userPhone ?? '')));
         break;
       case 3:
         Navigator.push(
@@ -79,61 +82,62 @@ class _HomeScreenState extends State<HomeScreen> {
         break;
     }
   }
+
   //Video Recording
   Future<void> _recordVideo() async {
-  final cameraStatus = await Permission.camera.request();
-  final micStatus = await Permission.microphone.request();
+    final cameraStatus = await Permission.camera.request();
+    final micStatus = await Permission.microphone.request();
 
-  if (cameraStatus != PermissionStatus.granted || micStatus != PermissionStatus.granted) {
+    if (cameraStatus != PermissionStatus.granted ||
+        micStatus != PermissionStatus.granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Camera and microphone permissions are required')),
+      );
+      await openAppSettings();
+      return;
+    }
+
+    final picker = ImagePicker();
+    final XFile? videoFile = await picker.pickVideo(source: ImageSource.camera);
+
+    if (videoFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video recording cancelled')),
+      );
+      return;
+    }
+
+    final savePath = await getVideoSavePath();
+    final File savedVideo = await File(videoFile.path).copy(savePath);
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Camera and microphone permissions are required')),
+      SnackBar(content: Text('Video saved at: ${savedVideo.path}')),
     );
-    await openAppSettings();
-    return;
   }
-
-  final picker = ImagePicker();
-  final XFile? videoFile = await picker.pickVideo(source: ImageSource.camera);
-
-  if (videoFile == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Video recording cancelled')),
-    );
-    return;
-  }
-
-  final savePath = await getVideoSavePath();
-  final File savedVideo = await File(videoFile.path).copy(savePath);
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('Video saved at: ${savedVideo.path}')),
-  );
-}
-
 
 //voice Recording
   Future<void> _startRecording() async {
-  final micStatus = await Permission.microphone.request();
+    final micStatus = await Permission.microphone.request();
 
-  if (micStatus != PermissionStatus.granted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please grant microphone permission')),
-    );
-    await openAppSettings();
-    return;
+    if (micStatus != PermissionStatus.granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please grant microphone permission')),
+      );
+      await openAppSettings();
+      return;
+    }
+
+    final path = await getRecordingPath();
+    await _recorder.startRecorder(toFile: path, codec: Codec.aacMP4);
+
+    setState(() {
+      _isRecording = true;
+      _recordingPath = path;
+    });
+
+    print('Recording started at: $path');
   }
-
-  final path = await getRecordingPath();
-  await _recorder.startRecorder(toFile: path, codec: Codec.aacMP4);
-
-  setState(() {
-    _isRecording = true;
-    _recordingPath = path;
-  });
-
-  print('Recording started at: $path');
-}
-
 
   Future<void> _stopRecording() async {
     if (_recorder.isStopped) return;
@@ -145,6 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
       SnackBar(content: Text('Recording saved at: $_recordingPath')),
     );
   }
+
 //police contact
   Future<void> _makePhoneCall(String phoneNumber) async {
     bool? res = await FlutterPhoneDirectCaller.callNumber(phoneNumber);
@@ -159,14 +164,26 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () async {
+        if (await Vibration.hasVibrator() ?? false) {
+          Vibration.vibrate(duration: 40); // short, subtle
+        }
+        onTap(); // your button action
+      },
+
+      // onTap: () {
+      //   HapticFeedback
+      //       .lightImpact(); // native, works even without vibration permission
+      //   onTap();
+      // },
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: Colors.white,
         elevation: 4,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -180,13 +197,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+              Flexible(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color.fromARGB(255, 137, 6, 160),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
               ),
             ],
@@ -205,46 +226,76 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDEEFF),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(100),
-        child: AppBar(
-          elevation: 6,
-          backgroundColor: Colors.transparent,
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF9C27B0), Color(0xFFE040FB)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-            ),
+  appBar: PreferredSize(
+    preferredSize: const Size.fromHeight(70),
+    child: AppBar(
+      elevation: 6,
+      backgroundColor: Colors.transparent,
+       automaticallyImplyLeading: false, // <- This removes the back arrow
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF9C27B0), Color(0xFFE040FB)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          centerTitle: true,
-          title: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text(
-                "Women Safety App",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              SizedBox(height: 4),
-              Text(
-                "Your safety, our priority",
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.white70),
-              ),
-            ],
-          ),
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          children: [
+      centerTitle: true,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            "Women Safety App",
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          Text(
+            "Your safety, our priority",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+  body: Padding(
+    padding: const EdgeInsets.all(12.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            // TODO: Implement donation logic or link
+           
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.purpleAccent,
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 40, vertical: 8),
+            textStyle: TextStyle(fontWeight: FontWeight.bold),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          child: Text("Donate"),
+        ),
+        SizedBox(height: 16),
+        Expanded(
+          child: GridView.count(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            children: [
+              // Your builderButtons go here
+
             buildGridButton("Panic Mode", "assets/download.png", () async {
               if (userPhone != null) {
                 await _panicModeService.activatePanicMode(userPhone!);
@@ -269,7 +320,8 @@ class _HomeScreenState extends State<HomeScreen> {
             buildGridButton("Live Tracking", "assets/download (3).png", () {
               // TODO: implement live tracking logic
             }),
-            buildGridButton("Voice Recording", "assets/download (4).png", () async {
+            buildGridButton("Voice Recording", "assets/download (4).png",
+                () async {
               if (_isRecording) {
                 await _stopRecording();
               } else {
@@ -280,23 +332,26 @@ class _HomeScreenState extends State<HomeScreen> {
               _recordVideo();
               // TODO: implement video recording logic
             }),
-            buildGridButton("Emergency Contacts", "assets/download (6).png", () {
+            buildGridButton("Emergency Contacts", "assets/download (6).png",
+                () {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => EmergencyContactScreen(userPhone: userPhone ?? '')));
+                      builder: (_) =>
+                          EmergencyContactScreen(userPhone: userPhone ?? '')));
             }),
-            buildGridButton("Logout", "assets/hack.jpeg", () {
-              // TODO: implement logout logic
-            }),
-          ],
+            ],
+          ),
         ),
-      ),
-      bottomNavigationBar: CustomBottomNav(
+      ],
+    ),
+  ),
+  bottomNavigationBar: CustomBottomNav(
         selectedIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
-    );
+);
+
   }
 }
 
@@ -318,4 +373,3 @@ Future<String> getVideoSavePath() async {
   }
   return '${videoDir.path}/video_${DateTime.now().millisecondsSinceEpoch}.mp4';
 }
-
