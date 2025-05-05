@@ -24,19 +24,26 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final LocationService _locationService = LocationService();
   final PanicModeService _panicModeService = PanicModeService();
-  String? userPhone; // Initialize LocationService
+  String? userPhone;
+
+  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
+  bool _isRecording = false;
+  String? _recordingPath;
+
   @override
   void initState() {
     super.initState();
-
-    // Start background location updates
     _fetchUserPhoneAndTrackLocation();
+    _initRecorder();
+  }
+
+  Future<void> _initRecorder() async {
+    await _recorder.openRecorder();
   }
 
   Future<void> _fetchUserPhoneAndTrackLocation() async {
     final prefs = await SharedPreferences.getInstance();
     userPhone = prefs.getString('userPhone');
-
     if (userPhone != null) {
       try {
         await _locationService.initializeLocationTracking(userPhone!);
@@ -55,78 +62,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
     switch (index) {
       case 1:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const MapScreen()));
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen()));
         break;
       case 2:
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => const EmergencyContactScreen(
-                      userPhone: '',
-                    )));
+                builder: (_) => EmergencyContactScreen(userPhone: userPhone ?? '')));
         break;
       case 3:
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => const DetailsScreen(
-                      phone: '',
-                    )));
+                builder: (_) => DetailsScreen(phone: userPhone ?? '')));
         break;
     }
   }
 
-  // Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
-  //   return GestureDetector(
-  //     onTap: onTap,
-  //     child: Card(
-  //       elevation: 4,
-  //       child: Column(
-  //         mainAxisAlignment: MainAxisAlignment.center,
-  //         children: [
-  //           Image.asset(assetPath, height: 100),
-  //           const SizedBox(height: 8),
-  //           Text(label, textAlign: TextAlign.center),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  //audio recording
-  final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
-  bool _isRecording = false;
-  String? _recordingPath;
-
- Future<void> _startRecording() async {
+  Future<void> _startRecording() async {
   final micStatus = await Permission.microphone.request();
-  final storageStatus = await Permission.storage.request();
 
-  print('Mic permission: $micStatus');
-  print('Storage permission: $storageStatus');
-
-  if (micStatus != PermissionStatus.granted || storageStatus != PermissionStatus.granted) {
+  if (micStatus != PermissionStatus.granted) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Microphone and storage permissions are required.'),
-      ),
+      const SnackBar(content: Text('Please grant microphone permission')),
     );
+    await openAppSettings();
     return;
   }
 
-  final Directory dir = Directory('/storage/emulated/0/Veerangana/Recordings');
-  if (!await dir.exists()) {
-    await dir.create(recursive: true);
-  }
-
-  final String path = '${dir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.aac';
-
-  await _recorder.openRecorder();
-  await _recorder.startRecorder(
-    toFile: path,
-    codec: Codec.aacADTS,
-  );
+  final path = await getRecordingPath();
+  await _recorder.startRecorder(toFile: path, codec: Codec.aacMP4);
 
   setState(() {
     _isRecording = true;
@@ -137,14 +102,11 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 
-
   Future<void> _stopRecording() async {
-    await _recorder.stopRecorder();
-    await _recorder.closeRecorder();
+    if (_recorder.isStopped) return;
 
-    setState(() {
-      _isRecording = false;
-    });
+    await _recorder.stopRecorder();
+    setState(() => _isRecording = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Recording saved at: $_recordingPath')),
@@ -154,7 +116,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _makePhoneCall(String phoneNumber) async {
     bool? res = await FlutterPhoneDirectCaller.callNumber(phoneNumber);
     if (res == false) {
-      // If unable to make the call
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Could not make the phone call'),
@@ -185,7 +146,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   fit: BoxFit.cover,
                 ),
               ),
-              // Image.asset(assetPath, height: 100, width: 100, fit: BoxFit.cover),
               const SizedBox(height: 8),
               Text(
                 label,
@@ -204,10 +164,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    _recorder.closeRecorder();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDEEFF),
-      //appbar
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100),
         child: AppBar(
@@ -220,9 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(30),
-              ),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
             ),
           ),
           centerTitle: true,
@@ -231,32 +194,17 @@ class _HomeScreenState extends State<HomeScreen> {
             children: const [
               Text(
                 "Women Safety App",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
               ),
               SizedBox(height: 4),
               Text(
                 "Your safety, our priority",
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white70,
-                ),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.white70),
               ),
             ],
           ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () {
-              // Add navigation logic
-            },
-          ),
         ),
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: GridView.count(
@@ -264,53 +212,49 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
           children: [
-            // buildGridButton("Panic Mode", "assets/download.png", () {}),
-           buildGridButton("Panic Mode", "assets/download.png", () async {
-  if (userPhone != null) {
-    await _panicModeService.activatePanicMode(userPhone!);
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('User phone number not found.'),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-}),
-buildGridButton("Stop Panic Mode", "assets/download.png", () {
-  _panicModeService.deactivatePanicMode();
-}),
-
-            // Play beep sound
-//   final player = AssetsAudioPlayer();
-//   player.open(
-//     Audio("assets/sounds/beep.mp3"),
-//     autoStart: true,
-//   );
-// }),
-
-            // buildGridButton("Police Contact", "assets/download (1).png", () {}),
+            buildGridButton("Panic Mode", "assets/download.png", () async {
+              if (userPhone != null) {
+                await _panicModeService.activatePanicMode(userPhone!);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('User phone number not found.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }),
+            buildGridButton("Stop Panic Mode", "assets/download.png", () {
+              _panicModeService.deactivatePanicMode();
+            }),
             buildGridButton("Police Contact", "assets/download (1).png", () {
-              // Call police emergency number (100)
               _makePhoneCall('100');
             }),
-            buildGridButton("SOS", "assets/download (2).png", () {}),
-            buildGridButton("Live Tracking", "assets/download (3).png", () {}),
-            buildGridButton("Voice Recording", "assets/download (4).png",
-                () async {
+            buildGridButton("SOS", "assets/download (2).png", () {
+              // TODO: implement SOS logic
+            }),
+            buildGridButton("Live Tracking", "assets/download (3).png", () {
+              // TODO: implement live tracking logic
+            }),
+            buildGridButton("Voice Recording", "assets/download (4).png", () async {
               if (_isRecording) {
                 await _stopRecording();
-                print('is recording voice');
               } else {
                 await _startRecording();
               }
             }),
-
-            buildGridButton(
-                "Video Recording", "assets/download (5).png", () {}),
-            buildGridButton(
-                "Emergency Contacts", "assets/download (6).png", () {}),
-            buildGridButton("Logout", "assets/hack.jpeg", () {}),
+            buildGridButton("Video Recording", "assets/download (5).png", () {
+              // TODO: implement video recording logic
+            }),
+            buildGridButton("Emergency Contacts", "assets/download (6).png", () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => EmergencyContactScreen(userPhone: userPhone ?? '')));
+            }),
+            buildGridButton("Logout", "assets/hack.jpeg", () {
+              // TODO: implement logout logic
+            }),
           ],
         ),
       ),
@@ -320,4 +264,14 @@ buildGridButton("Stop Panic Mode", "assets/download.png", () {
       ),
     );
   }
+}
+
+Future<String> getRecordingPath() async {
+  final dir = await getExternalStorageDirectory();
+  final path = '${dir!.path}/Recordings';
+  final folder = Directory(path);
+  if (!await folder.exists()) {
+    await folder.create(recursive: true);
+  }
+  return '$path/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
 }
