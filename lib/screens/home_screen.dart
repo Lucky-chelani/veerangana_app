@@ -65,20 +65,36 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (index) {
       case 1:
         Navigator.push(
-            context, MaterialPageRoute(builder: (_) => const MapScreen()));
+          context,
+          MaterialPageRoute(builder: (_) => const MapScreen()),
+        ).then((_) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+        });
         break;
       case 2:
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) =>
-                    EmergencyContactScreen(userPhone: userPhone ?? '')));
+          context,
+          MaterialPageRoute(
+              builder: (_) =>
+                  EmergencyContactScreen(userPhone: userPhone ?? '')),
+        ).then((_) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+        });
         break;
       case 3:
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) => DetailsScreen(phone: userPhone ?? '')));
+          context,
+          MaterialPageRoute(
+              builder: (_) => DetailsScreen(phone: userPhone ?? '')),
+        ).then((_) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+        });
         break;
     }
   }
@@ -226,132 +242,145 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  appBar: PreferredSize(
-    preferredSize: const Size.fromHeight(70),
-    child: AppBar(
-      elevation: 6,
-      backgroundColor: Colors.transparent,
-       automaticallyImplyLeading: false, // <- This removes the back arrow
-      flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF9C27B0), Color(0xFFE040FB)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-        ),
-      ),
-      centerTitle: true,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            "Women Safety App",
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: AppBar(
+          elevation: 6,
+          backgroundColor: Colors.transparent,
+          automaticallyImplyLeading: false, // <- This removes the back arrow
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF9C27B0), Color(0xFFE040FB)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
             ),
           ),
-          Text(
-            "Your safety, our priority",
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: Colors.white70,
-            ),
-          ),
-        ],
-      ),
-    ),
-  ),
-  body: Padding(
-    padding: const EdgeInsets.all(12.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        ElevatedButton(
-          onPressed: () {
-            // TODO: Implement donation logic or link
-           
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.purpleAccent,
-            foregroundColor: Colors.white,
-            padding: EdgeInsets.symmetric(horizontal: 40, vertical: 8),
-            textStyle: TextStyle(fontWeight: FontWeight.bold),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
-          child: Text("Donate"),
-        ),
-        SizedBox(height: 16),
-        Expanded(
-          child: GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+          centerTitle: true,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Your builderButtons go here
-
-            buildGridButton("Panic Mode", "assets/download.png", () async {
-              if (userPhone != null) {
-                await _panicModeService.activatePanicMode(userPhone!);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('User phone number not found.'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            }),
-            buildGridButton("Stop Panic Mode", "assets/download.png", () {
-              _panicModeService.deactivatePanicMode();
-            }),
-            buildGridButton("Police Contact", "assets/download (1).png", () {
-              _makePhoneCall('100');
-            }),
-            buildGridButton("SOS", "assets/download (2).png", () {
-              // TODO: implement SOS logic
-            }),
-            buildGridButton("Live Tracking", "assets/download (3).png", () {
-              // TODO: implement live tracking logic
-            }),
-            buildGridButton("Voice Recording", "assets/download (4).png",
-                () async {
-              if (_isRecording) {
-                await _stopRecording();
-              } else {
-                await _startRecording();
-              }
-            }),
-            buildGridButton("Video Recording", "assets/download (5).png", () {
-              _recordVideo();
-              // TODO: implement video recording logic
-            }),
-            buildGridButton("Emergency Contacts", "assets/download (6).png",
-                () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) =>
-                          EmergencyContactScreen(userPhone: userPhone ?? '')));
-            }),
+              Text(
+                "Women Safety App",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                "Your safety, our priority",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.white70,
+                ),
+              ),
             ],
           ),
         ),
-      ],
-    ),
-  ),
-  bottomNavigationBar: CustomBottomNav(
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                // TODO: Implement donation logic or link
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purpleAccent,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 8),
+                textStyle: TextStyle(fontWeight: FontWeight.bold),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: Text("Donate"),
+            ),
+            SizedBox(height: 16),
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                children: [
+                  // Your builderButtons go here
+
+                  buildGridButton("Panic Mode", "assets/download.png",
+                      () async {
+                    if (userPhone != null) {
+                      await _panicModeService.activatePanicMode(userPhone!);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('User phone number not found.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }),
+                  buildGridButton("Stop Panic Mode", "assets/download.png", () {
+                    _panicModeService.deactivatePanicMode();
+                  }),
+                  buildGridButton("Police Contact", "assets/download (1).png",
+                      () {
+                    _makePhoneCall('100');
+                  }),
+                  buildGridButton("SOS", "assets/download (2).png", () {
+                    // TODO: implement SOS logic
+                  }),
+                  buildGridButton("Live Tracking", "assets/download (3).png",
+                      () {
+                    // TODO: implement live tracking logic
+                  }),
+                  buildGridButton("Voice Recording", "assets/download (4).png",
+                      () async {
+                    if (_isRecording) {
+                      await _stopRecording();
+                    } else {
+                      await _startRecording();
+                    }
+                  }),
+                  buildGridButton("Video Recording", "assets/download (5).png",
+                      () {
+                    _recordVideo();
+                    // TODO: implement video recording logic
+                  }),
+                  buildGridButton(
+                      "Emergency Contacts", "assets/download (6).png", () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => EmergencyContactScreen(
+                                userPhone: userPhone ?? '')));
+                  }),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: CustomBottomNav(
         selectedIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
-);
+    );
+  }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reset selected index when returning to HomeScreen
+    if (_selectedIndex != 0) {
+      setState(() {
+        _selectedIndex = 0;
+      });
+    }
   }
 }
 

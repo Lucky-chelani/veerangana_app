@@ -17,6 +17,7 @@ class CustomBottomNav extends StatelessWidget {
       selectedItemColor: Colors.purple,
       unselectedItemColor: Colors.grey,
       onTap: onTap,
+      type: BottomNavigationBarType.fixed, // Ensures labels are always shown
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
         BottomNavigationBarItem(icon: Icon(Icons.map), label: "Map"),
