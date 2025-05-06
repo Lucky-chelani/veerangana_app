@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'otp_screen.dart';
+import 'package:veerangana/ui/colors.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key});
@@ -24,7 +25,10 @@ class _StartScreenState extends State<StartScreen> {
 
     if (phone.isEmpty || phone.length != 10 || !RegExp(r'^[0-9]+$').hasMatch(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a valid 10-digit phone number")),
+        const SnackBar(
+          content: Text("Please enter a valid 10-digit phone number"),
+          backgroundColor: AppColors.raspberry,
+        ),
       );
       return;
     }
@@ -41,7 +45,10 @@ class _StartScreenState extends State<StartScreen> {
           isSendingOtp = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Verification failed: ${e.message}")),
+          SnackBar(
+            content: Text("Verification failed: ${e.message}"),
+            backgroundColor: AppColors.raspberry,
+          ),
         );
       },
       codeSent: (String verificationId, int? resendToken) {
@@ -65,111 +72,116 @@ class _StartScreenState extends State<StartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //backgroundColor: const Color(0xFFF8F5FA),
-      body:  Stack(
-  fit: StackFit.expand,
-  children: [
-    // Image.asset(
-    //   'assets/startbg.png', // <-- Your background image
-    //   fit: BoxFit.cover,
-    // ),
-    Container(
-      // color: Colors.black.withOpacity(0.3), // Optional: dark overlay for better contrast
-    ),
-    SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Spacer(flex: 2),
-            Text(
-              "Welcome to your safe space!",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.purple, // change text color for visibility
+      body: Stack(
+        children: [
+          // Background Image with color overlay
+          Positioned.fill(
+            child: ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                AppColors.lightPeach.withValues(alpha:0.8),
+                BlendMode.overlay,
+              ),
+              child: Image.asset(
+                'assets/bg.jpg',
+                fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 10),
-            Text(
-              "Your safety is our priority",
-              style: TextStyle(
-                fontSize: 14,
-                color: const Color.fromARGB(255, 136, 40, 153),
-              ),
-            ),
-            const SizedBox(height: 30),
-            Container(
-              height: 120,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
+          ),
+
+          // Foreground rounded container
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.purple.shade100,
+                    color: Color(0x20000000),
                     blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    offset: Offset(0, -3),
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset('assets/hack.jpeg', fit: BoxFit.cover),
-              ),
-            ),
-            const SizedBox(height: 40),
-            TextField(
-              controller: phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                hintText: 'Enter your phone number',
-                prefixIcon: Icon(Icons.phone, color: Colors.purple),
-                filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.9), // for readability
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: Colors.purple.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: Colors.purple.shade200),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: isSendingOtp ? null : handleGetStarted,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/hack.jpeg',
+                    height: 50,
                   ),
-                ),
-                child: isSendingOtp
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                      )
-                    : const Text(
-                        "Get Started",
-                        style: TextStyle(fontSize: 16),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Welcome to your safe space!",
+                    style: TextStyle(
+                      fontSize: 20, 
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.deepBurgundy,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Your safety is our priority",
+                    style: TextStyle(color: AppColors.rosePink),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      hintText: 'Enter mobile number',
+                      hintStyle: TextStyle(color: AppColors.rosePink.withOpacity(0.7)),
+                      prefixText: '+91 ',
+                      prefixStyle: const TextStyle(color: AppColors.rosePink),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.raspberry, width: 2),
                       ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.salmonPink),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isSendingOtp ? null : handleGetStarted,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.raspberry,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        disabledBackgroundColor: AppColors.raspberry.withOpacity(0.6),
+                      ),
+                      child: isSendingOtp
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20, 
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              "Get Started",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const Spacer(flex: 3),
-          ],
-        ),
+          ),
+        ],
       ),
-    ),
-  ],
-),
     );
   }
 }

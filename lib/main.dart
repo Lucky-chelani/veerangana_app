@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/firebase_options.dart';
 import 'package:veerangana/location_service.dart';
 import 'package:veerangana/screens/start_screen.dart';
+import 'package:veerangana/ui/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,10 +20,7 @@ class WomenSafetyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Women Safety App',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.purple,
-        fontFamily: 'Roboto',
-      ),
+      theme: AppTheme.lightTheme,
       home: const StartScreen(), // You can add logic here to go to HomeScreen if user is already logged in
     );
   }
