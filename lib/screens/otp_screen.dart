@@ -101,8 +101,9 @@ class _OtpScreenState extends State<OtpScreen> {
               Text(
                 "Enter OTP sent to +91 ${widget.phone}",
                 style: TextStyle(
-                  color: AppColors.rosePink,
+                  color:AppColors.raspberry,
                   fontSize: 16,
+                  fontWeight: FontWeight.w500
                 ),
               ),
               const SizedBox(height: 30),

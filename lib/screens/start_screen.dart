@@ -78,7 +78,7 @@ class _StartScreenState extends State<StartScreen> {
           Positioned.fill(
             child: ColorFiltered(
               colorFilter: ColorFilter.mode(
-                AppColors.lightPeach.withValues(alpha:0.8),
+                const Color.fromARGB(255, 255, 165, 171).withValues(alpha:0.8),
                 BlendMode.overlay,
               ),
               child: Image.asset(
