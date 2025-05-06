@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import 'package:veerangana/ui/colors.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -35,29 +36,39 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        
-        title: const Text("Veerangana Maps",
-        style: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+        elevation: 0,
+        title: const Text(
+          "Veerangana Maps",
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
-        ),
-        backgroundColor: Colors.purple,
-        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: AppColors.rosePink,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Column(
         children: [
           // Map Section
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.25,
+          Container(
+            height: MediaQuery.of(context).size.height * 0.3, // Slightly larger map
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.deepBurgundy.withValues(alpha:0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: Stack(
               children: [
                 GoogleMap(
                   myLocationButtonEnabled: true,
                   myLocationEnabled: true,
                   markers: markers,
-                  polylines: polylines, // Add polylines to the map
+                  polylines: polylines,
                   onMapCreated: (GoogleMapController controller) {
                     googleMapController = controller;
                   },
@@ -71,14 +82,15 @@ class _MapScreenState extends State<MapScreen> {
                   top: 10,
                   right: 10,
                   child: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 4,
+                          color: AppColors.deepBurgundy.withValues(alpha:0.15),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
@@ -86,8 +98,14 @@ class _MapScreenState extends State<MapScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         LegendItem(
-                            color: Colors.blue, label: "Police Stations"),
-                        LegendItem(color: Colors.red, label: "Hospitals"),
+                          color: AppColors.raspberry,
+                          label: "Police Stations",
+                        ),
+                        SizedBox(height: 4),
+                        LegendItem(
+                          color: AppColors.rosePink,
+                          label: "Hospitals",
+                        ),
                       ],
                     ),
                   ),
@@ -95,45 +113,112 @@ class _MapScreenState extends State<MapScreen> {
               ],
             ),
           ),
-          // Buttons to show paths
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          
+          // Path Buttons Section
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.deepBurgundy.withValues(alpha:0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    await _showPathToNearestPlace("police");
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  child: const Text("Show Police Path",
-                  style: TextStyle(
-                      color: Colors.white,
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await _showPathToNearestPlace("police");
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.raspberry,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.local_police, size: 20),
+                    label: const Text(
+                      "Police Path",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await _showPathToNearestPlace("hospital");
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text(
-                    "Show Hospital Path",
-                    style: TextStyle(
-                      color: Colors.white,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await _showPathToNearestPlace("hospital");
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.rosePink,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.local_hospital, size: 20),
+                    label: const Text(
+                      "Hospital Path",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          // Nearby Places Section
+          
+          // Nearby Places Section - Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+              decoration: BoxDecoration(
+                color: AppColors.rosePink.withValues(alpha:0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                "Nearby Emergency Services",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.deepBurgundy,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          
+          // Places List
           Expanded(
             child: ListView(
+              padding: const EdgeInsets.only(top: 12, bottom: 16),
               children: [
                 _buildPlaceSection(
-                    "Nearby Police Stations", policeStations, Colors.blue),
-                _buildPlaceSection("Nearby Hospitals", hospitals, Colors.red),
+                  "Nearby Police Stations",
+                  policeStations,
+                  AppColors.raspberry,
+                  Icons.local_police,
+                ),
+                _buildPlaceSection(
+                  "Nearby Hospitals",
+                  hospitals,
+                  AppColors.rosePink,
+                  Icons.local_hospital,
+                ),
               ],
             ),
           ),
@@ -148,17 +233,17 @@ class _MapScreenState extends State<MapScreen> {
         policeStations[0]['latitude'],
         policeStations[0]['longitude'],
       );
-      await _fetchDirections(myCurrentLocation, nearestStation);
+      await _fetchDirections(myCurrentLocation, nearestStation, type: type);
     } else if (type == "hospital" && hospitals.isNotEmpty) {
       final LatLng nearestHospital = LatLng(
         hospitals[0]['latitude'],
         hospitals[0]['longitude'],
       );
-      await _fetchDirections(myCurrentLocation, nearestHospital);
+      await _fetchDirections(myCurrentLocation, nearestHospital, type: type);
     }
   }
 
-  Future<void> _fetchDirections(LatLng origin, LatLng destination) async {
+  Future<void> _fetchDirections(LatLng origin, LatLng destination, {String type = "police"}) async {
     final String url =
         "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=$googleApiKey";
 
@@ -187,7 +272,7 @@ class _MapScreenState extends State<MapScreen> {
           polylines.add(Polyline(
             polylineId: const PolylineId("route"),
             points: polylineCoordinates,
-            color: Colors.blue,
+            color: type == "hospital" ? AppColors.rosePink : AppColors.raspberry, // Match path color based on type
             width: 5,
           ));
         });
@@ -212,8 +297,7 @@ class _MapScreenState extends State<MapScreen> {
           markerId: const MarkerId("user_location"),
           position: currentLocation,
           infoWindow: const InfoWindow(title: "Your Location"),
-          icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
         ));
       });
 
@@ -238,13 +322,13 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _fetchNearbyPlaces(LatLng location) async {
     const int radius = 5000; // 5km radius
 
-    // Fetch police stations
+    // Fetch police stations with raspberry color
     await _fetchPlacesByType(
-        location, "police", policeStations, BitmapDescriptor.hueBlue);
+        location, "police", policeStations, BitmapDescriptor.hueRose);
 
-    // Fetch hospitals
+    // Fetch hospitals with rose color
     await _fetchPlacesByType(
-        location, "hospital", hospitals, BitmapDescriptor.hueRed);
+        location, "hospital", hospitals, BitmapDescriptor.hueRose);
   }
 
   // Fetch places by type
@@ -282,6 +366,7 @@ class _MapScreenState extends State<MapScreen> {
               'latitude': placeLocation.latitude,
               'longitude': placeLocation.longitude,
               'distance': distance,
+              'vicinity': place['vicinity'] ?? 'Address not available',
             });
 
             // Add marker for the place if markerColor is provided
@@ -311,19 +396,27 @@ class _MapScreenState extends State<MapScreen> {
 
   // Build a section for a specific type of place
   Widget _buildPlaceSection(
-      String title, List<Map<String, dynamic>> places, Color color) {
+      String title, List<Map<String, dynamic>> places, Color color, IconData icon) {
     return places.isEmpty
         ? const SizedBox.shrink()
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text(
-                  title,
-                  style: TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold, color: color),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(icon, color: color, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               ListView.builder(
@@ -333,33 +426,89 @@ class _MapScreenState extends State<MapScreen> {
                 itemBuilder: (context, index) {
                   final place = places[index];
                   return Card(
-                    margin:
-                        const EdgeInsets.symmetric(vertical: 4, horizontal: 14),
+                    margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
+                      side: BorderSide(
+                        color: color.withValues(alpha:0.2),
+                        width: 1,
+                      ),
                     ),
-                    elevation: 4,
+                    elevation: 2,
+                    shadowColor: color.withValues(alpha:0.1),
                     child: ListTile(
-                      leading: Icon(
-                        Icons.location_on,
-                        color: color, // Dynamically set the icon color
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 16,
+                      ),
+                      leading: CircleAvatar(
+                        backgroundColor: color.withValues(alpha:0.15),
+                        child: Icon(
+                          icon,
+                          color: color,
+                        ),
                       ),
                       title: Text(
                         place['name'],
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.deepBurgundy,
+                        ),
                       ),
-                      subtitle: Text(
-                          "Distance: ${place['distance'].toStringAsFixed(2)} km"),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          Text(
+                            "Distance: ${place['distance'].toStringAsFixed(2)} km",
+                            style: TextStyle(
+                              color: AppColors.deepBurgundy.withValues(alpha:0.7),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            place['vicinity'] ?? 'Address not available',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.deepBurgundy.withValues(alpha:0.6),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.directions),
+                        color: color,
+                        onPressed: () {
+                          // Move the map to the selected place
+                          googleMapController.animateCamera(
+                            CameraUpdate.newCameraPosition(
+                              CameraPosition(
+                                target: LatLng(place['latitude'], place['longitude']),
+                                zoom: 15,
+                              ),
+                            ),
+                          );
+                          
+                          // Show route to this place
+                          _fetchDirections(
+                            myCurrentLocation,
+                            LatLng(place['latitude'], place['longitude']),
+                            type: title.toLowerCase().contains("hospital") ? "hospital" : "police",
+                          );
+                        },
+                      ),
                       onTap: () {
                         // Move the map to the selected place
-                        googleMapController
-                            .animateCamera(CameraUpdate.newCameraPosition(
-                          CameraPosition(
-                            target:
-                                LatLng(place['latitude'], place['longitude']),
-                            zoom: 15,
+                        googleMapController.animateCamera(
+                          CameraUpdate.newCameraPosition(
+                            CameraPosition(
+                              target: LatLng(place['latitude'], place['longitude']),
+                              zoom: 15,
+                            ),
                           ),
-                        ));
+                        );
                       },
                     ),
                   );
@@ -370,8 +519,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   // Calculate distance between two coordinates
-  double _calculateDistance(
-      double lat1, double lon1, double lat2, double lon2) {
+  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     const double earthRadius = 6371; // Radius of the Earth in kilometers
     final double dLat = _degreesToRadians(lat2 - lat1);
     final double dLon = _degreesToRadians(lon2 - lon1);
@@ -412,7 +560,14 @@ class LegendItem extends StatelessWidget {
             shape: BoxShape.circle,
           ),
         ),
-        Text(label, style: const TextStyle(fontSize: 14)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.deepBurgundy,
+          ),
+        ),
       ],
     );
   }
