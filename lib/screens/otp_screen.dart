@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,9 +16,55 @@ class OtpScreen extends StatefulWidget {
   State<OtpScreen> createState() => _OtpScreenState();
 }
 
+
+
 class _OtpScreenState extends State<OtpScreen> {
   final TextEditingController otpController = TextEditingController();
   bool isVerifying = false;
+  bool canResendOtp = false; // Controls whether the "Resend OTP" button is enabled
+  int timerSeconds = 60; // Countdown timer in seconds
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer(); // Start the timer when the screen is initialized
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer when the screen is disposed
+    super.dispose();
+  }
+
+  void _startTimer() {
+    setState(() {
+      canResendOtp = false; // Disable the "Resend OTP" button
+      timerSeconds = 30; // Reset the timer to 30 seconds
+    });
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (timerSeconds > 0) {
+        setState(() {
+          timerSeconds--;
+        });
+      } else {
+        timer.cancel();
+        setState(() {
+          canResendOtp = true; // Enable the "Resend OTP" button
+        });
+      }
+    });
+  }
+
+  void _resendOtp() {
+    // Logic to resend OTP
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("OTP resent successfully!")),
+    );
+
+    _startTimer(); // Restart the timer after resending OTP
+  }
 
   void verifyOtp() async {
     setState(() {
@@ -164,19 +212,21 @@ class _OtpScreenState extends State<OtpScreen> {
               ),
               const SizedBox(height: 20),
               Center(
-                child: TextButton(
-                  onPressed: () {
-                    // Implement resend OTP logic if needed
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.raspberry,
-                  ),
-                  child: const Text(
-                    "Resend OTP",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                child: Column(
+                  children: [
+                    TextButton(
+                      onPressed: canResendOtp ? _resendOtp : null,
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.raspberry,
+                      ),
+                      child: Text(
+                        canResendOtp ? "Resend OTP" : "Resend OTP in $timerSeconds seconds",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ],
