@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'otp_screen.dart';
+import 'details.dart';
 import 'package:veerangana/ui/colors.dart';
 
 class StartScreen extends StatefulWidget {
@@ -15,9 +17,30 @@ class _StartScreenState extends State<StartScreen> {
   bool isSendingOtp = false;
 
   @override
+  void initState() {
+    super.initState();
+    _checkVerificationStatus(); // Check if the user is already verified
+  }
+
+  @override
   void dispose() {
     phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkVerificationStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isVerified = prefs.getBool('isVerified') ?? false;
+
+    if (isVerified) {
+      final userPhone = prefs.getString('userPhone') ?? '';
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DetailsScreen(phone: userPhone),
+        ),
+      );
+    }
   }
 
   void handleGetStarted() async {
@@ -39,7 +62,24 @@ class _StartScreenState extends State<StartScreen> {
 
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: '+91$phone',
-      verificationCompleted: (PhoneAuthCredential credential) {},
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        // Automatically sign in the user
+        await FirebaseAuth.instance.signInWithCredential(credential);
+
+        // Save verification status and phone number
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isVerified', true);
+        await prefs.setString('userPhone', phone);
+
+        if (context.mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailsScreen(phone: phone),
+            ),
+          );
+        }
+      },
       verificationFailed: (FirebaseAuthException e) {
         setState(() {
           isSendingOtp = false;
@@ -78,7 +118,7 @@ class _StartScreenState extends State<StartScreen> {
           Positioned.fill(
             child: ColorFiltered(
               colorFilter: ColorFilter.mode(
-                const Color.fromARGB(255, 255, 165, 171).withValues(alpha:0.8),
+                const Color.fromARGB(255, 255, 165, 171).withOpacity(0.8),
                 BlendMode.overlay,
               ),
               child: Image.asset(
@@ -115,7 +155,7 @@ class _StartScreenState extends State<StartScreen> {
                   const Text(
                     "Welcome to your safe space!",
                     style: TextStyle(
-                      fontSize: 20, 
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: AppColors.deepBurgundy,
                     ),
@@ -127,23 +167,33 @@ class _StartScreenState extends State<StartScreen> {
                   ),
                   const SizedBox(height: 20),
                   TextField(
-                    controller: phoneController,
-                    keyboardType: TextInputType.phone,
+                   controller: phoneController,
+                   keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
-                      hintText: 'Enter mobile number',
-                      hintStyle: TextStyle(color: AppColors.rosePink.withOpacity(0.7)),
-                      prefixText: '+91 ',
-                      prefixStyle: const TextStyle(color: AppColors.rosePink),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.raspberry, width: 2),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.salmonPink),
-                      ),
-                    ),
-                  ),
+                   hintText: 'Enter mobile number',
+                   hintStyle: TextStyle(color: AppColors.rosePink.withOpacity(0.7)),
+                    prefixIcon: Padding(
+                   padding: const EdgeInsets.only(left: 10, right: 5),
+                    child: Text(
+                    '+91',
+                   style: const TextStyle(
+                  color: AppColors.rosePink,
+                 fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                 ),
+      ),
+    ),
+    prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.raspberry, width: 2),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.salmonPink),
+    ),
+  ),
+),
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
@@ -161,7 +211,7 @@ class _StartScreenState extends State<StartScreen> {
                       child: isSendingOtp
                           ? const SizedBox(
                               height: 20,
-                              width: 20, 
+                              width: 20,
                               child: CircularProgressIndicator(
                                 color: Colors.white,
                                 strokeWidth: 2,
