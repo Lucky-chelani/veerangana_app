@@ -3,6 +3,7 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/location_service.dart';
 import 'package:veerangana/widgets/panicmode.dart';
+import 'package:veerangana/widgets/sos.dart';
 import '../widgets/custom_bottom_nav.dart';
 import 'map_screen.dart';
 import 'contacts.dart';
@@ -26,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final LocationService _locationService = LocationService();
   final PanicModeService _panicModeService = PanicModeService();
+  final sosService _sosService = sosService();
   String? userPhone;
 
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
@@ -328,13 +330,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       () {
                     _makePhoneCall('100');
                   }),
-                  buildGridButton("SOS", "assets/download (2).png", () {
-                    // TODO: implement SOS logic
-                  }),
-                  buildGridButton("Live Tracking", "assets/download (3).png",
-                      () {
-                    // TODO: implement live tracking logic
-                  }),
+buildGridButton("SOS", "assets/download (2).png", () async {
+  if (userPhone != null) {
+    await _sosService.activateSosMode(userPhone!); // Call the SOS service
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('SOS message sent to emergency contacts.'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('User phone number not found.'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}),
                   buildGridButton("Voice Recording", "assets/download (4).png",
                       () async {
                     if (_isRecording) {
@@ -347,14 +360,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       () {
                     _recordVideo();
                     // TODO: implement video recording logic
-                  }),
-                  buildGridButton(
-                      "Emergency Contacts", "assets/download (6).png", () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => EmergencyContactScreen(
-                                userPhone: userPhone ?? '')));
                   }),
                 ],
               ),

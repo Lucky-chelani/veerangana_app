@@ -21,6 +21,7 @@ class _MapScreenState extends State<MapScreen> {
   List<Map<String, dynamic>> policeStations = [];
   List<LatLng> polylineCoordinates = [];
   Set<Polyline> polylines = {};
+  bool isMapExpanded = false;
 
   List<Map<String, dynamic>> hospitals = [];
   final String googleApiKey =
@@ -29,7 +30,21 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
+    _loadCustomPins();
     _fetchCurrentLocation(); // Fetch user's current location on initialization
+  }
+    BitmapDescriptor? policePin; // Custom pin for police
+  BitmapDescriptor? hospitalPin; 
+
+    Future<void> _loadCustomPins() async {
+    policePin = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(48, 48)),
+      'assets/policepin.png', // Add your custom police pin image to assets
+    );
+    hospitalPin = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(48, 48)),
+      'assets/hospitalpin.png', // Add your custom hospital pin image to assets
+    );
   }
 
   @override
@@ -51,68 +66,77 @@ class _MapScreenState extends State<MapScreen> {
       body: Column(
         children: [
           // Map Section
-          Container(
-            height: MediaQuery.of(context).size.height * 0.3, // Slightly larger map
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.deepBurgundy.withValues(alpha:0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                GoogleMap(
-                  myLocationButtonEnabled: true,
-                  myLocationEnabled: true,
-                  markers: markers,
-                  polylines: polylines,
-                  onMapCreated: (GoogleMapController controller) {
-                    googleMapController = controller;
-                  },
-                  initialCameraPosition: CameraPosition(
-                    target: myCurrentLocation,
-                    zoom: 12,
+          GestureDetector(
+            onTap: (){
+              setState(() {
+                isMapExpanded = !isMapExpanded;
+              });
+            },
+            child: AnimatedContainer(
+              duration: const Duration(microseconds: 300),
+              height: isMapExpanded
+              ? MediaQuery.of(context).size.height * 0.5
+              : MediaQuery.of(context).size.height * 0.3,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.deepBurgundy.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              ),
+              child: Stack(
+                children: [
+                  GoogleMap(
+                    myLocationButtonEnabled: true,
+                    myLocationEnabled: true,
+                    markers: markers,
+                    polylines: polylines,
+                    onMapCreated: (GoogleMapController controller) {
+                      googleMapController = controller;
+                    },
+                    initialCameraPosition: CameraPosition(target: myCurrentLocation, zoom: 12),
                   ),
-                ),
-                // Legend for pin colors
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.deepBurgundy.withValues(alpha:0.15),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        LegendItem(
-                          color: AppColors.raspberry,
-                          label: "Police Stations",
-                        ),
-                        SizedBox(height: 4),
-                        LegendItem(
-                          color: AppColors.rosePink,
-                          label: "Hospitals",
-                        ),
-                      ],
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.deepBurgundy.withOpacity(0.15),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          LegendItem(
+                            color: AppColors.raspberry,
+                            label: "Police Stations",
+                          ),
+                          SizedBox(height: 4),
+                          LegendItem(
+                            color: AppColors.rosePink,
+                            label: "Hospitals",
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+              
+              
+              ),
           ),
+
           
           // Path Buttons Section
           Container(
