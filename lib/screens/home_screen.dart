@@ -324,9 +324,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     }
                   }),
-                  buildGridButton("Stop Panic Mode", "assets/download.png", () {
-                    _panicModeService.deactivatePanicMode();
-                  }),
                   buildGridButton("Police Contact", "assets/download (1).png",
                       () {
                     _makePhoneCall('100');
