@@ -20,48 +20,11 @@ void main() async {
    //  print('hello3');
  
   runApp(const WomenSafetyApp());
+
 }
 
-class WomenSafetyApp extends StatefulWidget {
+class WomenSafetyApp extends StatelessWidget {
   const WomenSafetyApp({super.key});
-
-  @override
-  State<WomenSafetyApp> createState() => _WomenSafetyAppState();
-}
-
-class _WomenSafetyAppState extends State<WomenSafetyApp> {
-  Future<void> initState() async {
-    
-    super.initState();
-       // _requestPermissions();
-         await _requestPermissions();
-  
-
-  }
-  Future<void> _requestPermissions() async {
-  // List of permissions to request
-  final permissions = [
-    Permission.location,
-    Permission.locationAlways,
-    Permission.sms,
-    Permission.phone,
-    Permission.camera,
-    Permission.microphone,
-    Permission.storage,
-  ];
-
-  // Request each permission
-  for (var permission in permissions) {
-    if (await permission.isDenied) {
-      await permission.request();
-    }
-  }
-
-  // Handle permissions that are permanently denied
-  if (await Permission.locationAlways.isPermanentlyDenied) {
-    openAppSettings(); // Open app settings to manually enable permissions
-  }
-}
 
   @override
   Widget build(BuildContext context) {

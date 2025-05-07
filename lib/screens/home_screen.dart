@@ -38,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
+    _requestPermissions();
     _fetchUserPhoneAndTrackLocation();
     _initRecorder();
     _animationController = AnimationController(
@@ -45,6 +46,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       vsync: this,
     );
   }
+
+      Future<void> _requestPermissions() async {
+  // List of permissions to request
+  final permissions = [
+    Permission.location,
+    Permission.locationAlways,
+    Permission.sms,
+    Permission.phone,
+    Permission.camera,
+    Permission.microphone,
+    Permission.storage,
+  ];
+
+  // Request each permission
+  for (var permission in permissions) {
+    if (await permission.isDenied) {
+      await permission.request();
+    }
+  }
+
+  // Handle permissions that are permanently denied
+  if (await Permission.locationAlways.isPermanentlyDenied) {
+    openAppSettings(); // Open app settings to manually enable permissions
+  }
+}
 
   Future<void> _initRecorder() async {
     await _recorder.openRecorder();
@@ -335,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             setState(() => _buttonPressStates['donate'] = true);
           },
           onTapUp: (_) {
-            setState(() => _buttonPressStates['donate'] = false);
+            setState(() => _buttonPressStates['donate'] = true);
             _provideHapticFeedback('standard');
             // TODO: Implement donation logic
                       Navigator.push(
@@ -488,6 +514,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 child: ElevatedButton(
                   onPressed: () {
                     // TODO: Implement donation logic or link
+            //                               Navigator.push(
+            // context,
+            // MaterialPageRoute(builder: (context) => const DonateScreen())
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const DonateScreen()));
+                    
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.raspberry,
