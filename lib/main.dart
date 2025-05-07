@@ -3,17 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/firebase_options.dart';
 import 'package:veerangana/location_service.dart';
+import 'package:veerangana/screens/powerButton.dart';
 import 'package:veerangana/screens/start_screen.dart';
 import 'package:veerangana/ui/app_theme.dart';
 
+
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+ // print('hello1');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.android);
+  //  print('hello2');
+  // await initializeService();
+   //  print('hello3');
+ 
   runApp(const WomenSafetyApp());
 }
 
-class WomenSafetyApp extends StatelessWidget {
+class WomenSafetyApp extends StatefulWidget {
   const WomenSafetyApp({super.key});
+
+  @override
+  State<WomenSafetyApp> createState() => _WomenSafetyAppState();
+}
+
+class _WomenSafetyAppState extends State<WomenSafetyApp> {
+  void initState() {
+    
+    super.initState();
+       // _requestPermissions();
+  
+
+  }
 
   @override
   Widget build(BuildContext context) {

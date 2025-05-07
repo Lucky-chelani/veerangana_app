@@ -4,8 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
-
-import 'package:veerangana/screens/home_screen.dart';
 import 'package:veerangana/ui/colors.dart';
 import 'package:veerangana/widgets/custom_bottom_nav.dart';
 
@@ -270,6 +268,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          automaticallyImplyLeading: false, 
         title: const Text(
           "Your Profile",
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),

@@ -42,11 +42,11 @@ _initializeMap();// Fetch user's current location on initialization
 
     Future<void> _loadCustomPins() async {
     policePin = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(12, 12)),
+      const ImageConfiguration(size: Size(24, 24)),
       'assets/policepin.png', // Add your custom police pin image to assets
     );
     hospitalPin = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(12, 12)),
+      const ImageConfiguration(size: Size(24, 24)),
       'assets/hospitalpin.png', // Add your custom hospital pin image to assets
     );
   }

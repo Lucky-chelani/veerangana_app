@@ -24,6 +24,7 @@ plugins {
 
     // END: FlutterFire Configuration
     id "org.jetbrains.kotlin.android" version "1.9.10" apply false
+
 }
 
 include ":app"

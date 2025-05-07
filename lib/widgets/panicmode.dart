@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as Math;
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,182 +12,257 @@ import 'package:fluttertoast/fluttertoast.dart'; // For showing toast messages
 
 class PanicModeService {
   Timer? _smsTimer;
+  Timer? _vibrationTimer;
   final SmsSender _smsSender = SmsSender();
   AudioPlayer? _audioPlayer;  // Audio player instance
+  bool _isPanicModeActive = false;
 
   // Limit how many times SMS is sent (e.g., 6 messages = 30 seconds if interval is 5s)
   static const int maxSmsSends = 1;
 
-  // FCM server key and endpoint
-  static const String serverKey = 'STQWgrbY-VIWXpFeErAMQy2srhm0vqP1HNPIkqC0vk4'; // Replace with your FCM server key
-  static const String fcmUrl = 'https://fcm.googleapis.com/fcm/send';
-
   /// Activate Panic Mode
   Future<void> activatePanicMode(String userPhone) async {
-  try {
-          _audioPlayer = AudioPlayer();
-    // Fetch emergency contacts from Firestore
-    final contactsSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userPhone)
-        .get();
-
-    if (!contactsSnapshot.exists || contactsSnapshot.data() == null) {
-      print('No emergency contacts found.');
+    if (_isPanicModeActive) {
+      print('Panic mode is already active.');
       return;
     }
 
-    final List<dynamic> emergencyContactsRaw =
-        contactsSnapshot.data()!['emergencyContacts'] ?? [];
+    _isPanicModeActive = true;
 
-    final List<String> emergencyContacts = emergencyContactsRaw
-        .where((contact) =>
-            contact != null &&
-            contact is Map<String, dynamic> &&
-            contact['phone'] != null)
-        .map((contact) => contact['phone'] as String)
-        .toList();
+    try {
+      // Initialize audio player
+      _audioPlayer = AudioPlayer();
+      
+      // Start playing sound and vibration immediately, don't wait for other operations
+      _playBeepSound();
+      _startVibration();
 
-    if (emergencyContacts.isEmpty) {
-      print('No valid emergency contacts found.');
-      return;
-    }
+      // Fetch emergency contacts from Firestore
+      final contactsSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userPhone)
+          .get();
 
-    // Get current location
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
-    String locationUrl =
-        "https://www.google.com/maps?q=${position.latitude},${position.longitude}";
-    String message = "I need help! My current location is: $locationUrl";
-
-    // Get SIM card information (for dual SIM devices)
-    List<Map<String, dynamic>> simCards = await SmsSender.getSimCards();
-    int simSlot = simCards.isNotEmpty ? simCards[0]['simSlot'] : 0; // Default to SIM 1
-
-    int smsCount = 0;
-
-    // Start playing the beep sound in parallel
-    _playBeepSound();
-
-    // Start vibration in parallel
-    Timer.periodic(const Duration(seconds: 5), (timer) async {
-      if (smsCount >= maxSmsSends) {
-        timer.cancel(); // Stop vibration timer after sending all SMS
-      } else {
-        // Vibrate for 1 second with high intensity
-        if (await Vibration.hasVibrator() ?? false) {
-          Vibration.vibrate(duration: 1000, amplitude: 255); // 1000ms, max intensity
-        }
-      }
-    });
-
-    // Send SMS in parallel
-    _smsTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-      if (smsCount >= maxSmsSends) {
-        timer.cancel();
-        deactivatePanicMode(); // Automatically deactivate panic mode
-        print('Maximum number of SMS messages sent. Stopping Panic Mode.');
+      if (!contactsSnapshot.exists || contactsSnapshot.data() == null) {
+        print('No emergency contacts found.');
         return;
       }
 
-      // Send SMS to emergency contacts
-      for (String contact in emergencyContacts) {
-        try {
-          String status = await SmsSender.sendSms(
-            phoneNumber: contact,
-            message: message,
-            simSlot: simSlot,
-          );
-          print("SMS sent to $contact. Status: $status");
+      final List<dynamic> emergencyContactsRaw =
+          contactsSnapshot.data()!['emergencyContacts'] ?? [];
 
-          // Show toast message for each SMS sent
-          Fluttertoast.showToast(
-            msg: "SMS sent Successfully",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: const Color.fromARGB(255, 69, 9, 32), // Green background
-            textColor: const Color(0xFFFFFFFF), // White text
-            fontSize: 16.0,
-          );
-        } catch (e) {
-          print("Failed to send SMS to $contact: $e");
-        }
+      final List<String> emergencyContacts = emergencyContactsRaw
+          .where((contact) =>
+              contact != null &&
+              contact is Map<String, dynamic> &&
+              contact['phone'] != null)
+          .map((contact) => contact['phone'] as String)
+          .toList();
+
+      if (emergencyContacts.isEmpty) {
+        print('No valid emergency contacts found.');
+        return;
       }
 
-      smsCount++;
-    });
-
-    // Send FCM notification in parallel
-    Future.delayed(Duration.zero, () async {
-      await _sendNotificationToAllUsers(locationUrl);
-    });
-
-    print('Panic mode activated. SMS, notifications, vibration, and sound are running in parallel.');
-  } catch (e) {
-    print("Error in Panic Mode: $e");
-  }
-}
-
-  /// Send Notification via FCM to All Users
-  Future<void> _sendNotificationToAllUsers(String locationUrl) async {
-    try {
-      final response = await http.post(
-        Uri.parse(fcmUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'key=$serverKey',
-        },
-        body: jsonEncode({
-          'to': '/topics/global_alerts', // Send to the "global_alerts" topic
-          'notification': {
-            'title': 'Emergency Alert!',
-            'body': 'I need help! My current location is: $locationUrl',
-          },
-          'data': {
-            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-            'locationUrl': locationUrl,
-          },
-        }),
+      // Get current location
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
       );
+      String locationUrl =
+          "https://www.google.com/maps?q=${position.latitude},${position.longitude}";
+      String message = "I need help! My current location is: $locationUrl";
 
-      if (response.statusCode == 200) {
-        print('Notification sent successfully to all users.');
+      // Get SIM card information (for dual SIM devices)
+      List<Map<String, dynamic>> simCards = await SmsSender.getSimCards();
+      int simSlot = simCards.isNotEmpty ? simCards[0]['simSlot'] : 0; // Default to SIM 1
+
+      int smsCount = 0;
+
+      // Send SMS in parallel
+      _smsTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+        if (smsCount >= maxSmsSends) {
+          timer.cancel();
+          deactivatePanicMode(); // Automatically deactivate panic mode
+          print('Maximum number of SMS messages sent. Stopping Panic Mode.');
+          return;
+        }
+
+        // Send SMS to emergency contacts
+        for (String contact in emergencyContacts) {
+          try {
+            String status = await SmsSender.sendSms(
+              phoneNumber: contact,
+              message: message,
+              simSlot: simSlot,
+            );
+            print("SMS sent to $contact. Status: $status");
+            
+            await FirebaseFirestore.instance.collection('sent_sms').add({
+              'phoneNumber': contact,
+              'message': message,
+              'timestamp': FieldValue.serverTimestamp(),
+              'status': status,
+              'userPhone': userPhone, // Add the user's phone number for reference
+            });
+
+            // Show toast message for each SMS sent
+            Fluttertoast.showToast(
+              msg: "SMS sent Successfully",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.TOP,
+              backgroundColor: const Color.fromARGB(255, 69, 9, 32), // Burgundy background
+              textColor: const Color(0xFFFFFFFF), // White text
+              fontSize: 16.0,
+            );
+          } catch (e) {
+            print("Failed to send SMS to $contact: $e");
+            Fluttertoast.showToast(
+              msg: "Failed to send SMS: ${e.toString().substring(0, Math.min(50, e.toString().length))}",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.TOP,
+              backgroundColor: const Color.fromARGB(255, 128, 0, 0), // Dark red for errors
+              textColor: const Color(0xFFFFFFFF),
+              fontSize: 16.0,
+            );
+          }
+        }
+
+        smsCount++;
+      });
+
+      print('Panic mode activated. SMS, vibration, and sound are running simultaneously.');
+    } catch (e) {
+      print("Error in Panic Mode: $e");
+      _isPanicModeActive = false;
+    }
+  }
+
+  /// Play beep sound - runs independently of other functions
+  Future<void> _playBeepSound() async {
+    try {
+      if (_audioPlayer == null) {
+        _audioPlayer = AudioPlayer();
+      }
+      
+      print("Loading beep sound...");
+      await _audioPlayer!.setAsset('assets/sound.wav');
+      await _audioPlayer!.setLoopMode(LoopMode.one); // Repeat indefinitely
+      await _audioPlayer!.setVolume(1.0); // Full volume
+      
+      print("Playing beep sound...");
+      await _audioPlayer!.play();
+    } catch (e) {
+      print("Error playing beep sound: $e");
+      // Try to recover by reinitializing
+      _audioPlayer?.dispose();
+      _audioPlayer = AudioPlayer();
+      try {
+        await _audioPlayer!.setAsset('assets/sound.wav');
+        await _audioPlayer!.setLoopMode(LoopMode.one);
+        await _audioPlayer!.play();
+      } catch (retryError) {
+        print("Failed to recover audio playback: $retryError");
+      }
+    }
+  }
+
+  /// Start vibration pattern - runs independently of other functions
+  Future<void> _startVibration() async {
+    try {
+      if (await Vibration.hasVibrator() ?? false) {
+        bool hasAmplitudeControl = await Vibration.hasAmplitudeControl() ?? false;
+        
+        // Check if device supports custom vibration patterns
+        if (hasAmplitudeControl) {
+          // SOS pattern (... --- ...) with varying intensities
+          Vibration.vibrate(
+            pattern: [0, 300, 200, 300, 200, 300, // S (3 short vibrations)
+                    500, // pause
+                    500, 250, 500, 250, 500, // O (3 long vibrations)
+                    500, // pause
+                    300, 200, 300, 200, 300], // S (3 short vibrations)
+            intensities: hasAmplitudeControl ? 
+                [0, 255, 0, 255, 0, 255, 
+                 0, 
+                 255, 0, 255, 0, 255, 
+                 0, 
+                 255, 0, 255, 0, 255] : [],
+            repeat: -1, // -1 for repeat indefinitely
+          );
+        } else {
+          // Simpler pattern for devices without amplitude control
+          Vibration.vibrate(
+            pattern: [0, 500, 500, 500, 500], // On-off-on-off pattern
+            repeat: -1, // -1 for repeat indefinitely
+          );
+        }
+        
+        print("Vibration started");
       } else {
-        print('Failed to send notification to all users: ${response.body}');
+        print("Device does not support vibration");
       }
     } catch (e) {
-      print('Error sending notification to all users: $e');
+      print("Error starting vibration: $e");
     }
   }
 
-  /// Play beep sound
-/// Play beep sound in a loop
-  Future<void> _playBeepSound() async {
-  try {
-    if (_audioPlayer == null) {
-      _audioPlayer = AudioPlayer(); // Reinitialize if null
+  /// Stop vibration
+  void _stopVibration() {
+    try {
+      Vibration.cancel();
+      if (_vibrationTimer != null) {
+        _vibrationTimer!.cancel();
+        _vibrationTimer = null;
+      }
+      print("Vibration stopped");
+    } catch (e) {
+      print("Error stopping vibration: $e");
     }
-    print("Loading beep sound...");
-    await _audioPlayer!.setAsset('assets/sound.wav'); // Add a beep sound file to your assets
-    await _audioPlayer!.setLoopMode(LoopMode.one); // Repeat the sound indefinitely
-    print("Playing beep sound...");
-    await _audioPlayer!.play();
-  } catch (e) {
-    print("Error playing beep sound: $e");
   }
-}
-  /// Deactivate Panic Mode
-  void deactivatePanicMode() {
+
+  /// Deactivate Panic Mode - stops all ongoing processes
+  Future<void> deactivatePanicMode() async {
+    if (!_isPanicModeActive) {
+      return;
+    }
+    
+    _isPanicModeActive = false;
+    
+    // Cancel SMS timer
     if (_smsTimer != null) {
       _smsTimer!.cancel();
       _smsTimer = null;
-      print('Panic mode deactivated.');
     }
-    if (_audioPlayer != null) {
-      _audioPlayer!.stop(); // Stop the audio playback
-      _audioPlayer!.dispose(); // Dispose of the audio player
-      _audioPlayer = null; // Set to null for reinitialization
+    
+    // Stop vibration
+    _stopVibration();
+    
+    // Stop audio
+    try {
+      if (_audioPlayer != null) {
+        await _audioPlayer!.stop();
+        await _audioPlayer!.dispose();
+        _audioPlayer = null;
+      }
+    } catch (e) {
+      print("Error stopping audio: $e");
     }
+    
+    print('Panic mode fully deactivated.');
+    
+    // Show confirmation toast
+    Fluttertoast.showToast(
+      msg: "Panic mode deactivated",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: const Color.fromARGB(255, 0, 100, 0), // Green for success
+      textColor: const Color(0xFFFFFFFF),
+      fontSize: 16.0,
+    );
+  }
+
+  /// Check if panic mode is currently active
+  bool isPanicModeActive() {
+    return _isPanicModeActive;
   }
 }

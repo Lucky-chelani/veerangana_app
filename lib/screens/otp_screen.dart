@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:veerangana/screens/addDetails.dart';
 import 'package:veerangana/widgets/custom_bottom_nav.dart';
 import 'details.dart';
 import 'package:veerangana/ui/colors.dart';
@@ -68,58 +70,76 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   void verifyOtp() async {
-    setState(() {
-      isVerifying = true;
-    });
+  setState(() {
+    isVerifying = true;
+  });
 
-    final credential = PhoneAuthProvider.credential(
-      verificationId: widget.verificationId,
-      smsCode: otpController.text.trim(),
-    );
+  final credential = PhoneAuthProvider.credential(
+    verificationId: widget.verificationId,
+    smsCode: otpController.text.trim(),
+  );
 
-    try {
-      await FirebaseAuth.instance.signInWithCredential(credential);
+  try {
+    await FirebaseAuth.instance.signInWithCredential(credential);
 
-      // ✅ Save phone number to SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userPhone', widget.phone);
+    // ✅ Save phone number to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userPhone', widget.phone);
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Phone number verified!"),
-            backgroundColor: AppColors.rosePink,
-          ),
-        );
+    // Check if the user already exists in Firestore
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.phone)
+        .get();
 
-        // Navigate to the details screen
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Phone number verified!"),
+          backgroundColor: AppColors.rosePink,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Navigate based on whether the user is new or existing
+      if (userDoc.exists) {
+        // Existing user: Navigate to HomeScreen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => DetailsScreen(),
+            builder: (context) => const BottomNavBar(initialIndex: 0),
           ),
         );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Invalid OTP"),
-            backgroundColor: AppColors.raspberry,
+      } else {
+        // New user: Navigate to AddDetailsScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AddDetailsScreen(),
           ),
         );
       }
     }
-
-    setState(() {
-      isVerifying = false;
-    });
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Invalid OTP"),
+          backgroundColor: AppColors.raspberry,
+        ),
+      );
+    }
   }
 
+  setState(() {
+    isVerifying = false;
+  });
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          automaticallyImplyLeading: false, 
         title: const Text("Verify OTP"),
         backgroundColor: AppColors.rosePink,
         foregroundColor: Colors.white,

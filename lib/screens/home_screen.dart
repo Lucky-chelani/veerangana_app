@@ -4,10 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/location_service.dart';
 import 'package:veerangana/widgets/panicmode.dart';
 import 'package:veerangana/widgets/sos.dart';
-import '../widgets/custom_bottom_nav.dart';
-import 'map_screen.dart';
-import 'contacts.dart';
-import 'details.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -33,6 +29,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   bool _isRecording = false;
   String? _recordingPath;
+  
+  // Button press states
+  Map<String, bool> _buttonPressStates = {};
 
   @override
   void initState() {
@@ -165,103 +164,243 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
-  Widget buildGridButton(String label, String assetPath, VoidCallback onTap, {bool isPulsing = false}) {
-    return GestureDetector(
-      onTap: () async {
-        if (await Vibration.hasVibrator() ?? false) {
-          Vibration.vibrate(duration: 40); // short, subtle
-        }
-        onTap();
-      },
-      child: AnimatedBuilder(
-        animation: _animationController ?? const AlwaysStoppedAnimation(0),
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: isPulsing && _animationController != null
-                      ? AppColors.raspberry.withOpacity(0.3 + _animationController!.value * 0.3)
-                      : Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: child,
-          );
-        },
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: isPulsing ? AppColors.raspberry : Colors.transparent,
-              width: isPulsing ? 2.0 : 0.0,
-            ),
-          ),
-          color: Colors.white,
-          elevation: 0,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: Image.asset(
-                    assetPath,
-                    height: 110,
-                    width: 110,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Flexible(
-                  child: Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.deepBurgundy,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
-                  ),
-                ),
+  // Provide haptic feedback based on action type
+  void _provideHapticFeedback(String actionType) async {
+    if (await Vibration.hasVibrator() ?? false) {
+      if (actionType == 'panic' || actionType == 'sos') {
+        // Strong feedback for emergency actions
+        Vibration.vibrate(pattern: [0, 100, 50, 100]); 
+      } else if (actionType == 'recording') {
+        // Medium feedback for recording actions
+        Vibration.vibrate(duration: 60, amplitude: 180);
+      } else {
+        // Standard feedback for regular actions
+        Vibration.vibrate(duration: 40, amplitude: 150);
+      }
+    }
+  }
 
-                // Recording indicator
-                if (label == "Voice Recording" && _isRecording)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
+  Widget buildGridButton(String label, String assetPath, VoidCallback onTap, {bool isPulsing = false, String buttonType = 'standard'}) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isPressed = _buttonPressStates[label] ?? false;
+        
+        return GestureDetector(
+          onTapDown: (_) {
+            setState(() => _buttonPressStates[label] = true);
+          },
+          onTapUp: (_) {
+            setState(() => _buttonPressStates[label] = false);
+            _provideHapticFeedback(buttonType);
+            onTap();
+          },
+          onTapCancel: () {
+            setState(() => _buttonPressStates[label] = false);
+          },
+          child: AnimatedBuilder(
+            animation: _animationController ?? const AlwaysStoppedAnimation(0),
+            builder: (context, child) {
+              return TweenAnimationBuilder(
+                tween: Tween<double>(begin: 0, end: isPressed ? 0.95 : 1.0),
+                duration: const Duration(milliseconds: 100),
+                curve: Curves.easeInOut,
+                builder: (context, scale, child) {
+                  return Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: isPulsing && _animationController != null
+                                ? AppColors.raspberry.withOpacity(0.3 + _animationController!.value * 0.3)
+                                : isPressed 
+                                  ? Colors.black.withOpacity(0.05)
+                                  : Colors.black.withOpacity(0.15),
+                            blurRadius: isPressed ? 4 : 12,
+                            offset: isPressed ? const Offset(0, 2) : const Offset(0, 6),
+                            spreadRadius: isPressed ? 1 : 2,
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          "REC",
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: child,
                     ),
-                  ),
-              ],
+                  );
+                },
+                child: child,
+              );
+            },
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: BorderSide(
+                  color: isPulsing 
+                      ? AppColors.raspberry 
+                      : isPressed 
+                          ? AppColors.deepBurgundy.withOpacity(0.4)
+                          : Colors.transparent,
+                  width: isPulsing ? 2.0 : isPressed ? 1.5 : 0.0,
+                ),
+              ),
+              color: isPressed ? Colors.white.withOpacity(0.9) : Colors.white,
+              elevation: isPressed ? 0 : 0, // Control elevation with the container shadow instead
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Container(
+                        height: 110,
+                        width: 110,
+                        child: Stack(
+                          children: [
+                            Image.asset(
+                              assetPath,
+                              height: 110,
+                              width: 110,
+                              fit: BoxFit.cover,
+                            ),
+                            if (isPressed)
+                              Container(
+                                height: 110,
+                                width: 110,
+                                color: Colors.white.withOpacity(0.2),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Flexible(
+                      child: Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isPressed ? AppColors.raspberry : AppColors.deepBurgundy,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                    ),
+
+                    // Recording indicator
+                    if (label == "Voice Recording" && _isRecording)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Text(
+                              "REC",
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      }
+    );
+  }
+
+  Widget buildDonateButton() {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isPressed = _buttonPressStates['donate'] ?? false;
+        
+        return GestureDetector(
+          onTapDown: (_) {
+            setState(() => _buttonPressStates['donate'] = true);
+          },
+          onTapUp: (_) {
+            setState(() => _buttonPressStates['donate'] = false);
+            _provideHapticFeedback('standard');
+            // TODO: Implement donation logic
+          },
+          onTapCancel: () {
+            setState(() => _buttonPressStates['donate'] = false);
+          },
+          child: TweenAnimationBuilder(
+            tween: Tween<double>(begin: 0, end: isPressed ? 0.95 : 1.0),
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeInOut,
+            builder: (context, scale, child) {
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isPressed 
+                          ? [AppColors.rosePink, AppColors.raspberry.withOpacity(0.8)]
+                          : [AppColors.rosePink, AppColors.raspberry],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.raspberry.withOpacity(isPressed ? 0.3 : 0.5),
+                        blurRadius: isPressed ? 8 : 15,
+                        offset: isPressed ? const Offset(0, 2) : const Offset(0, 5),
+                        spreadRadius: isPressed ? 0 : 1,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.favorite,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        "Donate to Support",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          letterSpacing: 0.5,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.3),
+                              offset: const Offset(0, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -337,37 +476,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Donation button
-              Container(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implement donation logic or link
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.raspberry,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      letterSpacing: 0.5,
-                    ),
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.favorite, size: 20),
-                      SizedBox(width: 8),
-                      Text("Donate to Support"),
-                    ],
-                  ),
-                ),
-              ),
+              // Enhanced donation button
+              buildDonateButton(),
               
               const SizedBox(height: 24),
               
@@ -387,7 +497,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ),
               ),
               
-              // Feature Grid
+              // Feature Grid with enhanced buttons
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
@@ -411,11 +521,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           ),
                         );
                       }
-                    }),
+                    }, buttonType: 'panic'),
                     
                     buildGridButton("Police Contact", "assets/polic.png", () {
                       _makePhoneCall('100');
-                    }),
+                    }, buttonType: 'emergency'),
                     
                     buildGridButton("SOS", "assets/sos.png", () async {
                       if (userPhone != null) {
@@ -434,7 +544,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           ),
                         );
                       }
-                    }),
+                    }, buttonType: 'sos'),
                     
                     buildGridButton(
                       "Voice Recording", 
@@ -447,11 +557,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         }
                       },
                       isPulsing: _isRecording,
+                      buttonType: 'recording',
                     ),
                     
                     buildGridButton("Video Recording", "assets/video.png", () {
                       _recordVideo();
-                    }),
+                    }, buttonType: 'recording'),
                     
                     buildGridButton("Safe Safar", "assets/travel.png", () {
                       // TODO: Implement safe safar feature
@@ -471,8 +582,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
     );
   }
-
-
 }
 
 Future<String> getRecordingPath() async {
