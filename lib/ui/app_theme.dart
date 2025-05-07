@@ -20,6 +20,8 @@ class AppTheme {
         onSurface: AppColors.deepBurgundy,
         onError: Colors.white,
       ),
+       // Set default font family to Poppins
+      fontFamily: 'Poppins',
 
       // Text theme
       textTheme: const TextTheme(

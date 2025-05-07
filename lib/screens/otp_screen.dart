@@ -163,7 +163,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 style: const TextStyle(color: AppColors.deepBurgundy, fontSize: 18),
                 decoration: InputDecoration(
                   hintText: "Enter 6-digit OTP",
-                  hintStyle: TextStyle(color: AppColors.rosePink.withOpacity(0.7)),
+                  hintStyle: TextStyle(color: AppColors.rosePink.withValues(alpha:0.7)),
                   counterText: "",
                   filled: true,
                   fillColor: Colors.white,
@@ -192,7 +192,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    disabledBackgroundColor: AppColors.raspberry.withOpacity(0.6),
+                    disabledBackgroundColor: AppColors.raspberry.withValues(alpha:0.6),
                   ),
                   child: isVerifying
                       ? const SizedBox(
