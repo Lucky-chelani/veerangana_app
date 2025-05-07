@@ -14,7 +14,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-//import 'package:flutter/services.dart';
+import 'package:veerangana/ui/colors.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -23,12 +23,13 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
   final LocationService _locationService = LocationService();
   final PanicModeService _panicModeService = PanicModeService();
   final sosService _sosService = sosService();
   String? userPhone;
+  AnimationController? _animationController;
 
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   bool _isRecording = false;
@@ -39,6 +40,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetchUserPhoneAndTrackLocation();
     _initRecorder();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
   }
 
   Future<void> _initRecorder() async {
@@ -130,17 +135,23 @@ class _HomeScreenState extends State<HomeScreen> {
     final File savedVideo = await File(videoFile.path).copy(savePath);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Video saved at: ${savedVideo.path}')),
+      SnackBar(
+        content: Text('Video saved at: ${savedVideo.path}'),
+        backgroundColor: AppColors.raspberry,
+      ),
     );
   }
 
-//voice Recording
+  //voice Recording
   Future<void> _startRecording() async {
     final micStatus = await Permission.microphone.request();
 
     if (micStatus != PermissionStatus.granted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please grant microphone permission')),
+        const SnackBar(
+          content: Text('Please grant microphone permission'),
+          backgroundColor: AppColors.deepBurgundy,
+        ),
       );
       await openAppSettings();
       return;
@@ -155,80 +166,143 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     print('Recording started at: $path');
+    
+    // Start pulsing animation when recording
+    _animationController?.repeat(reverse: true);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Recording started...'),
+        backgroundColor: AppColors.raspberry,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   Future<void> _stopRecording() async {
     if (_recorder.isStopped) return;
 
     await _recorder.stopRecorder();
+    _animationController?.stop();
+    _animationController?.reset();
+    
     setState(() => _isRecording = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Recording saved at: $_recordingPath')),
+      SnackBar(
+        content: Text('Recording saved at: $_recordingPath'),
+        backgroundColor: AppColors.rosePink,
+      ),
     );
   }
 
-//police contact
+  //police contact
   Future<void> _makePhoneCall(String phoneNumber) async {
     bool? res = await FlutterPhoneDirectCaller.callNumber(phoneNumber);
     if (res == false) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Could not make the phone call'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.deepBurgundy,
         ),
       );
     }
   }
 
-  Widget buildGridButton(String label, String assetPath, VoidCallback onTap) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
+  Widget buildGridButton(String label, String assetPath, VoidCallback onTap, {bool isPulsing = false}) {
+    return GestureDetector(
       onTap: () async {
         if (await Vibration.hasVibrator() ?? false) {
           Vibration.vibrate(duration: 40); // short, subtle
         }
-        onTap(); // your button action
+        onTap();
       },
-
-      // onTap: () {
-      //   HapticFeedback
-      //       .lightImpact(); // native, works even without vibration permission
-      //   onTap();
-      // },
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        color: Colors.white,
-        elevation: 4,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  assetPath,
-                  height: 110,
-                  width: 110,
-                  fit: BoxFit.cover,
+      child: AnimatedBuilder(
+        animation: _animationController ?? const AlwaysStoppedAnimation(0),
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: isPulsing && _animationController != null
+                      ? AppColors.raspberry.withOpacity(0.3 + _animationController!.value * 0.3)
+                      : Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Flexible(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color.fromARGB(255, 137, 6, 160),
+              ],
+            ),
+            child: child,
+          );
+        },
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: isPulsing ? AppColors.raspberry : Colors.transparent,
+              width: isPulsing ? 2.0 : 0.0,
+            ),
+          ),
+          color: Colors.white,
+          elevation: 0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Image.asset(
+                    assetPath,
+                    height: 110,
+                    width: 110,
+                    fit: BoxFit.cover,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Flexible(
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.deepBurgundy,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                ),
+
+                // Recording indicator
+                if (label == "Voice Recording" && _isRecording)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          "REC",
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -238,6 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _recorder.closeRecorder();
+    _animationController?.dispose();
     super.dispose();
   }
 
@@ -245,126 +320,197 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
+        preferredSize: const Size.fromHeight(80),
         child: AppBar(
-          elevation: 6,
+          elevation: 8,
           backgroundColor: Colors.transparent,
-          automaticallyImplyLeading: false, // <- This removes the back arrow
+          automaticallyImplyLeading: false,
           flexibleSpace: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF9C27B0), Color(0xFFE040FB)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                colors: [AppColors.rosePink, AppColors.raspberry],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
           ),
           centerTitle: true,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
+            children: const [
               Text(
                 "Women Safety App",
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
+                  letterSpacing: 0.5,
                 ),
               ),
+              SizedBox(height: 4),
               Text(
                 "Your safety, our priority",
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white70,
+                  color: Colors.white,
                 ),
               ),
             ],
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                // TODO: Implement donation logic or link
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purpleAccent,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 8),
-                textStyle: TextStyle(fontWeight: FontWeight.bold),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.lightPeach, AppColors.salmonPink],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Donation button
+              Container(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Implement donation logic or link
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.raspberry,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      letterSpacing: 0.5,
+                    ),
+                    elevation: 6,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.favorite, size: 20),
+                      SizedBox(width: 8),
+                      Text("Donate to Support"),
+                    ],
+                  ),
                 ),
               ),
-              child: Text("Donate"),
-            ),
-            SizedBox(height: 16),
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                children: [
-                  // Your builderButtons go here
-
-                  buildGridButton("Panic Mode", "assets/download.png",
+              
+              const SizedBox(height: 24),
+              
+              // Section header
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0, bottom: 12.0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Safety Features",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.deepBurgundy,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // Feature Grid
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  children: [
+                    buildGridButton("Panic Mode", "assets/panic.png", () async {
+                      if (userPhone != null) {
+                        await _panicModeService.activatePanicMode(userPhone!);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Panic mode activated!'),
+                            backgroundColor: AppColors.raspberry,
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('User phone number not found.'),
+                            backgroundColor: AppColors.deepBurgundy,
+                          ),
+                        );
+                      }
+                    }),
+                    
+                    buildGridButton("Police Contact", "assets/polic.png", () {
+                      _makePhoneCall('100');
+                    }),
+                    
+                    buildGridButton("SOS", "assets/sos.png", () async {
+                      if (userPhone != null) {
+                        await _sosService.activateSosMode(userPhone!);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('SOS message sent to emergency contacts.'),
+                            backgroundColor: AppColors.raspberry,
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('User phone number not found.'),
+                            backgroundColor: AppColors.deepBurgundy,
+                          ),
+                        );
+                      }
+                    }),
+                    
+                    buildGridButton(
+                      "Voice Recording", 
+                      "assets/audioe.png",
                       () async {
-                    if (userPhone != null) {
-                      await _panicModeService.activatePanicMode(userPhone!);
-                    } else {
+                        if (_isRecording) {
+                          await _stopRecording();
+                        } else {
+                          await _startRecording();
+                        }
+                      },
+                      isPulsing: _isRecording,
+                    ),
+                    
+                    buildGridButton("Video Recording", "assets/video.png", () {
+                      _recordVideo();
+                    }),
+                    
+                    buildGridButton("Safe Safar", "assets/travel.png", () {
+                      // TODO: Implement safe safar feature
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('User phone number not found.'),
-                          backgroundColor: Colors.red,
+                          content: Text('Safe Safar feature coming soon!'),
+                          backgroundColor: AppColors.rosePink,
                         ),
                       );
-                    }
-                  }),
-                  buildGridButton("Police Contact", "assets/download (1).png",
-                      () {
-                    _makePhoneCall('100');
-                  }),
-buildGridButton("SOS", "assets/download (2).png", () async {
-  if (userPhone != null) {
-    await _sosService.activateSosMode(userPhone!); // Call the SOS service
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('SOS message sent to emergency contacts.'),
-        backgroundColor: Colors.green,
-      ),
-    );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('User phone number not found.'),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-}),
-                  buildGridButton("Voice Recording", "assets/download (4).png",
-                      () async {
-                    if (_isRecording) {
-                      await _stopRecording();
-                    } else {
-                      await _startRecording();
-                    }
-                  }),
-                  buildGridButton("Video Recording", "assets/download (5).png",
-                      () {
-                    _recordVideo();
-                    // TODO: implement video recording logic
-                  }),
-                ],
+                    }),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: CustomBottomNav(

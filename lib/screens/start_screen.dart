@@ -147,11 +147,20 @@ class _StartScreenState extends State<StartScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.asset(
-                    'assets/hack.jpeg',
-                    height: 50,
+                  ClipOval(
+                    child: Image.asset(
+                      'assets/newlogo.jpg',
+                      height: 60,
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                    // ClipRRect(
+                    // borderRadius: BorderRadius.circular(12),
+                    // child: Image.asset(
+                    //   'assets/newlogo.jpg',
+                    //   height: 50,
+                    // ),
+                    // ),
+                     const SizedBox(height: 16),
                   const Text(
                     "Welcome to your safe space!",
                     style: TextStyle(
