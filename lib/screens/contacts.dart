@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/screens/home_screen.dart';
 import 'package:veerangana/ui/colors.dart';
+import 'package:veerangana/widgets/custom_bottom_nav.dart';
 
 
 class EmergencyContactScreen extends StatefulWidget {
-  final String userPhone;
 
-  const EmergencyContactScreen({super.key, required this.userPhone});
+  const EmergencyContactScreen({super.key});
 
   @override
   State<EmergencyContactScreen> createState() => _EmergencyContactScreenState();
@@ -18,11 +19,31 @@ class EmergencyContactScreen extends StatefulWidget {
 class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
   final List<Map<String, String>> contacts = [];
   bool isLoading = false;
+    String userPhone = '';
 
   @override
   void initState() {
     super.initState();
-    _loadExistingContacts();
+      _initializeData();
+
+  }
+
+  Future<void> _initializeData() async {
+  await _loadUserPhone(); // Ensure userPhone is loaded first
+  await _loadExistingContacts(); // Then load existing contacts
+}
+
+    Future<void> _loadUserPhone() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    userPhone = prefs.getString('userPhone') ?? ''; // Default to an empty string if not found
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> _loadExistingContacts() async {
@@ -30,7 +51,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
       // Fetch existing emergency contacts from Firestore
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(widget.userPhone)
+          .doc(userPhone)
           .get();
 
       if (userDoc.exists && userDoc.data()!.containsKey('emergencyContacts')) {
@@ -293,7 +314,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
     try {
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(widget.userPhone)
+          .doc(userPhone)
           .update({
         'emergencyContacts': contacts,
       });
@@ -309,7 +330,7 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const HomeScreen(),
+          builder: (context) => const BottomNavBar(initialIndex: 0,),
         ),
       );
     } catch (e) {

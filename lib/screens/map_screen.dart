@@ -30,19 +30,23 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCustomPins();
-    _fetchCurrentLocation(); // Fetch user's current location on initialization
+_initializeMap();// Fetch user's current location on initialization
   }
     BitmapDescriptor? policePin; // Custom pin for police
   BitmapDescriptor? hospitalPin; 
 
+  Future<void> _initializeMap() async {
+  await _loadCustomPins();
+  await _fetchCurrentLocation();
+}
+
     Future<void> _loadCustomPins() async {
     policePin = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(48, 48)),
+      const ImageConfiguration(size: Size(12, 12)),
       'assets/policepin.png', // Add your custom police pin image to assets
     );
     hospitalPin = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(48, 48)),
+      const ImageConfiguration(size: Size(12, 12)),
       'assets/hospitalpin.png', // Add your custom hospital pin image to assets
     );
   }
@@ -66,76 +70,83 @@ class _MapScreenState extends State<MapScreen> {
       body: Column(
         children: [
           // Map Section
-          GestureDetector(
-            onTap: (){
-              setState(() {
-                isMapExpanded = !isMapExpanded;
-              });
-            },
-            child: AnimatedContainer(
-              duration: const Duration(microseconds: 300),
-              height: isMapExpanded
-              ? MediaQuery.of(context).size.height * 0.5
-              : MediaQuery.of(context).size.height * 0.3,
+         GestureDetector(
+  onTap: () {
+    setState(() {
+      isMapExpanded = !isMapExpanded;
+    });
+  },
+  child: AnimatedContainer(
+    duration: const Duration(milliseconds: 300),
+    height: isMapExpanded ? 450 : 200,
+    width: double.infinity,
+    decoration: BoxDecoration(
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.deepBurgundy.withOpacity(0.1),
+          blurRadius: 8,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Stack(
+        children: [
+          IgnorePointer(
+            ignoring: !isMapExpanded, // Disable interactions when collapsed
+            child: GoogleMap(
+              myLocationButtonEnabled: true,
+              myLocationEnabled: true,
+              markers: markers,
+              polylines: polylines,
+              onMapCreated: (GoogleMapController controller) {
+                googleMapController = controller;
+              },
+              initialCameraPosition: CameraPosition(
+                target: myCurrentLocation,
+                zoom: 12,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 10,
+            right: 10,
+            child: Container(
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.deepBurgundy.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  )
-                ]
-              ),
-              child: Stack(
-                children: [
-                  GoogleMap(
-                    myLocationButtonEnabled: true,
-                    myLocationEnabled: true,
-                    markers: markers,
-                    polylines: polylines,
-                    onMapCreated: (GoogleMapController controller) {
-                      googleMapController = controller;
-                    },
-                    initialCameraPosition: CameraPosition(target: myCurrentLocation, zoom: 12),
-                  ),
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.deepBurgundy.withOpacity(0.15),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          LegendItem(
-                            color: AppColors.raspberry,
-                            label: "Police Stations",
-                          ),
-                          SizedBox(height: 4),
-                          LegendItem(
-                            color: AppColors.rosePink,
-                            label: "Hospitals",
-                          ),
-                        ],
-                      ),
-                    ),
+                    color: AppColors.deepBurgundy.withOpacity(0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              
-              
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  LegendItem(
+                    color: AppColors.raspberry,
+                    label: "Police Stations",
+                  ),
+                  SizedBox(height: 4),
+                  LegendItem(
+                    color: AppColors.rosePink,
+                    label: "Hospitals",
+                  ),
+                ],
               ),
+            ),
           ),
+        ],
+      ),
+    ),
+  ),
+),
+
 
           
           // Path Buttons Section
@@ -394,14 +405,21 @@ class _MapScreenState extends State<MapScreen> {
             });
 
             // Add marker for the place if markerColor is provided
-            if (markerColor != null) {
-              markers.add(Marker(
-                markerId: MarkerId(place['name']),
-                position: placeLocation,
-                infoWindow: InfoWindow(title: place['name']),
-                icon: BitmapDescriptor.defaultMarkerWithHue(markerColor),
-              ));
-            }
+BitmapDescriptor? customIcon;
+if (type == "police") {
+  customIcon = policePin;
+} else if (type == "hospital") {
+  customIcon = hospitalPin;
+}
+
+if (customIcon != null) {
+  markers.add(Marker(
+    markerId: MarkerId(place['name']),
+    position: placeLocation,
+    infoWindow: InfoWindow(title: place['name']),
+    icon: customIcon,
+  ));
+}
           }
 
           // Sort the places by distance and keep only the nearest 5

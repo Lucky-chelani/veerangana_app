@@ -24,7 +24,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
   final LocationService _locationService = LocationService();
   final PanicModeService _panicModeService = PanicModeService();
   final sosService _sosService = sosService();
@@ -57,50 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _onItemTapped(int index) {
-    if (_selectedIndex == index) return;
-
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    switch (index) {
-      case 1:
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const MapScreen()),
-        ).then((_) {
-          setState(() {
-            _selectedIndex = 0;
-          });
-        });
-        break;
-      case 2:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) =>
-                  EmergencyContactScreen(userPhone: userPhone ?? '')),
-        ).then((_) {
-          setState(() {
-            _selectedIndex = 0;
-          });
-        });
-        break;
-      case 3:
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) => DetailsScreen(phone: userPhone ?? '')),
-        ).then((_) {
-          setState(() {
-            _selectedIndex = 0;
-          });
-        });
-        break;
-    }
-  }
-
+  
   //Video Recording
   Future<void> _recordVideo() async {
     final cameraStatus = await Permission.camera.request();
@@ -367,23 +323,10 @@ buildGridButton("SOS", "assets/download (2).png", () async {
           ],
         ),
       ),
-      bottomNavigationBar: CustomBottomNav(
-        selectedIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
     );
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Reset selected index when returning to HomeScreen
-    if (_selectedIndex != 0) {
-      setState(() {
-        _selectedIndex = 0;
-      });
-    }
-  }
+
 }
 
 Future<String> getRecordingPath() async {

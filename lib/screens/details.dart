@@ -2,16 +2,17 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 
 import 'package:veerangana/screens/home_screen.dart';
 import 'package:veerangana/ui/colors.dart';
+import 'package:veerangana/widgets/custom_bottom_nav.dart';
 
 
 class DetailsScreen extends StatefulWidget {
-  final String phone;
 
-  const DetailsScreen({super.key, required this.phone});
+  const DetailsScreen({super.key});
 
   @override
   State<DetailsScreen> createState() => _DetailsScreenState();
@@ -25,6 +26,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
 
   String selectedGender = 'Female';
   final List<String> genders = ['Female', 'Male', 'Other'];
+    String userPhone = '';
 
   bool isLoading = false;
   File? profileImage;
@@ -34,6 +36,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+        _loadUserPhone();
     _fetchUserDetails();
 
     // Initialize animation controller
@@ -58,6 +61,23 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
     super.dispose();
   }
 
+    Future<void> _loadUserPhone() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    userPhone = prefs.getString('userPhone') ?? ''; // Default to an empty string if not found
+
+    if (userPhone.isNotEmpty) {
+      await _fetchUserDetails(); // Fetch user details after loading phone number
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   Future<void> _fetchUserDetails() async {
     setState(() {
       isLoading = true;
@@ -66,7 +86,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(widget.phone)
+          .doc(userPhone)
           .get();
 
       if (userDoc.exists) {
@@ -122,7 +142,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
     try {
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(widget.phone)
+          .doc(userPhone)
           .update(userDetails);
 
       if (mounted) {
@@ -135,7 +155,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
 
         // Navigate to home screen
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => const BottomNavBar(initialIndex: 0,)),
         );
       }
     } catch (e) {
@@ -172,7 +192,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
         // Upload the image to Firebase Storage
         final storageRef = FirebaseStorage.instance
             .ref()
-            .child('profile_photos/${widget.phone}.jpg');
+            .child('profile_photos/${userPhone}.jpg');
         final uploadTask = storageRef.putFile(profileImage!);
 
         // Show uploading progress
@@ -189,7 +209,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
         // Save the download URL in Firestore
         await FirebaseFirestore.instance
             .collection('users')
-            .doc(widget.phone)
+            .doc(userPhone)
             .update({'profilePhoto': downloadUrl});
 
         if (mounted) {
@@ -217,6 +237,33 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
         }
       }
     }
+     else {
+    // If no photo is selected, create an empty tag in Firestore
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userPhone)
+          .update({'profilePhoto': ''}); // Save an empty string as a placeholder
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No photo selected. Placeholder saved."),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to save placeholder: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
   }
 
   @override
@@ -325,7 +372,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
                           buildTextField(nameController, "Enter your name", Icons.person),
 
                           buildLabel("Phone Number"),
-                          buildReadOnlyField(widget.phone, Icons.phone),
+                          buildReadOnlyField(userPhone, Icons.phone),
 
                           buildLabel("Alternative Phone Number"),
                           buildTextField(altPhoneController, "Enter alternative phone", Icons.phone_android),
