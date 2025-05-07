@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/ui/colors.dart';
+import 'package:veerangana/widgets/custom_bottom_nav.dart';
 
 class AddDetailsScreen extends StatefulWidget {
   const AddDetailsScreen({super.key});
@@ -102,7 +103,10 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
         );
 
         // Navigate to home screen or another screen
-        Navigator.of(context).pop();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const BottomNavBar(initialIndex: 0,)),
+      );
       }
     } catch (e) {
       if (mounted) {
