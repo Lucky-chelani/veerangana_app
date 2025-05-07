@@ -20,18 +20,35 @@ class AppTheme {
         onSurface: AppColors.deepBurgundy,
         onError: Colors.white,
       ),
+       // Set default font family to Poppins
+      fontFamily: 'Poppins',
 
       // Text theme
       textTheme: const TextTheme(
-        displayLarge: TextStyle(color: AppColors.deepBurgundy),
-        displayMedium: TextStyle(color: AppColors.deepBurgundy),
-        displaySmall: TextStyle(color: AppColors.deepBurgundy),
-        headlineMedium: TextStyle(color: AppColors.deepBurgundy),
-        headlineSmall: TextStyle(color: AppColors.deepBurgundy),
-        titleLarge: TextStyle(color: AppColors.deepBurgundy),
-        bodyLarge: TextStyle(color: AppColors.deepBurgundy),
-        bodyMedium: TextStyle(color: AppColors.deepBurgundy),
-      ),
+  displayLarge: TextStyle(
+    color: AppColors.deepBurgundy,
+    fontWeight: FontWeight.w600, // Semi-Bold
+  ),
+  displayMedium: TextStyle(
+    color: AppColors.deepBurgundy,
+    fontWeight: FontWeight.w600,
+  ),
+  bodyLarge: TextStyle(
+    color: AppColors.deepBurgundy,
+    fontWeight: FontWeight.w600,
+  ),
+),
+      
+      // textTheme: const TextTheme(
+      //   displayLarge: TextStyle(color: AppColors.deepBurgundy),
+      //   displayMedium: TextStyle(color: AppColors.deepBurgundy),
+      //   displaySmall: TextStyle(color: AppColors.deepBurgundy),
+      //   headlineMedium: TextStyle(color: AppColors.deepBurgundy),
+      //   headlineSmall: TextStyle(color: AppColors.deepBurgundy),
+      //   titleLarge: TextStyle(color: AppColors.deepBurgundy),
+      //   bodyLarge: TextStyle(color: AppColors.deepBurgundy),
+      //   bodyMedium: TextStyle(color: AppColors.deepBurgundy),
+      // ),
 
       // App bar theme
       appBarTheme: const AppBarTheme(

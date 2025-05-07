@@ -119,7 +119,7 @@ class _StartScreenState extends State<StartScreen> {
           Positioned.fill(
             child: ColorFiltered(
               colorFilter: ColorFilter.mode(
-                const Color.fromARGB(255, 255, 165, 171).withOpacity(0.8),
+                const Color.fromARGB(255, 255, 165, 171).withValues(alpha:0.8),
                 BlendMode.overlay,
               ),
               child: Image.asset(
@@ -150,8 +150,8 @@ class _StartScreenState extends State<StartScreen> {
                 children: [
                   ClipOval(
                     child: Image.asset(
-                      'assets/newlogo.jpg',
-                      height: 60,
+                      'assets/veerlogo.jpg',
+                      height: 70,
                     ),
                   ),
                     // ClipRRect(
@@ -172,7 +172,7 @@ class _StartScreenState extends State<StartScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    "Your safety is our priority",
+                    "apki suraksha, hamari zimmedari",
                     style: TextStyle(color: AppColors.rosePink),
                   ),
                   const SizedBox(height: 20),
@@ -181,7 +181,7 @@ class _StartScreenState extends State<StartScreen> {
                    keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                    hintText: 'Enter mobile number',
-                   hintStyle: TextStyle(color: AppColors.rosePink.withOpacity(0.7)),
+                   hintStyle: TextStyle(color: AppColors.rosePink.withValues(alpha: 0.7)),
                     prefixIcon: Padding(
                    padding: const EdgeInsets.only(left: 10, right: 5),
                     child: Text(
@@ -216,7 +216,7 @@ class _StartScreenState extends State<StartScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        disabledBackgroundColor: AppColors.raspberry.withOpacity(0.6),
+                        disabledBackgroundColor: AppColors.raspberry.withValues(alpha:0.6),
                       ),
                       child: isSendingOtp
                           ? const SizedBox(

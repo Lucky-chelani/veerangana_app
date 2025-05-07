@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:veerangana/ui/colors.dart';
+import 'donate_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -476,8 +477,37 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Enhanced donation button
-              buildDonateButton(),
+              // Donation button
+              Container(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Implement donation logic or link
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.raspberry,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      letterSpacing: 0.5,
+                    ),
+                    elevation: 6,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.favorite, size: 20),
+                      SizedBox(width: 8),
+                      Text("Donate to Support"),
+                    ],
+                  ),
+                ),
+              ),
               
               const SizedBox(height: 24),
               
@@ -527,7 +557,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       _makePhoneCall('100');
                     }, buttonType: 'emergency'),
                     
-                    buildGridButton("SOS", "assets/sos.png", () async {
+                    buildGridButton("SOS", "assets/sosbutton.png", () async {
                       if (userPhone != null) {
                         await _sosService.activateSosMode(userPhone!);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -560,7 +590,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       buttonType: 'recording',
                     ),
                     
-                    buildGridButton("Video Recording", "assets/video.png", () {
+                    buildGridButton("Video Recording", "assets/videobutton.png", () {
                       _recordVideo();
                     }, buttonType: 'recording'),
                     
