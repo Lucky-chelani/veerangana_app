@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/location_service.dart';
+import 'package:veerangana/screens/donation.dart';
 import 'package:veerangana/widgets/panicmode.dart';
 import 'package:veerangana/widgets/sos.dart';
 import 'package:vibration/vibration.dart';
@@ -337,6 +338,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             setState(() => _buttonPressStates['donate'] = false);
             _provideHapticFeedback('standard');
             // TODO: Implement donation logic
+                      Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const DonateScreen()),
+          );
           },
           onTapCancel: () {
             setState(() => _buttonPressStates['donate'] = false);
