@@ -15,7 +15,7 @@ class PanicModeService {
   AudioPlayer? _audioPlayer;  // Audio player instance
 
   // Limit how many times SMS is sent (e.g., 6 messages = 30 seconds if interval is 5s)
-  static const int maxSmsSends = 6;
+  static const int maxSmsSends = 1;
 
   // FCM server key and endpoint
   static const String serverKey = 'STQWgrbY-VIWXpFeErAMQy2srhm0vqP1HNPIkqC0vk4'; // Replace with your FCM server key
@@ -163,18 +163,19 @@ class PanicModeService {
   /// Play beep sound
 /// Play beep sound in a loop
   Future<void> _playBeepSound() async {
-    try {
-      if (_audioPlayer == null) {
-        _audioPlayer = AudioPlayer(); // Reinitialize if null
-      }
-      await _audioPlayer!.setAsset('assets/sound.wav'); // Add a beep sound file to your assets
-      await _audioPlayer!.setLoopMode(LoopMode.one); // Repeat the sound indefinitely
-      await _audioPlayer!.play();
-    } catch (e) {
-      print("Error playing beep sound: $e");
+  try {
+    if (_audioPlayer == null) {
+      _audioPlayer = AudioPlayer(); // Reinitialize if null
     }
+    print("Loading beep sound...");
+    await _audioPlayer!.setAsset('assets/sound.wav'); // Add a beep sound file to your assets
+    await _audioPlayer!.setLoopMode(LoopMode.one); // Repeat the sound indefinitely
+    print("Playing beep sound...");
+    await _audioPlayer!.play();
+  } catch (e) {
+    print("Error playing beep sound: $e");
   }
-
+}
   /// Deactivate Panic Mode
   void deactivatePanicMode() {
     if (_smsTimer != null) {

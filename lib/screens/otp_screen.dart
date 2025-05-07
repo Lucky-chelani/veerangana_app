@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:veerangana/widgets/custom_bottom_nav.dart';
 import 'details.dart';
 import 'package:veerangana/ui/colors.dart';
 
@@ -95,7 +96,7 @@ class _OtpScreenState extends State<OtpScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => DetailsScreen(phone: widget.phone),
+            builder: (context) => DetailsScreen(),
           ),
         );
       }

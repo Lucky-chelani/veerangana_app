@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:veerangana/widgets/custom_bottom_nav.dart';
 import 'otp_screen.dart';
 import 'details.dart';
 import 'package:veerangana/ui/colors.dart';
@@ -37,7 +38,7 @@ class _StartScreenState extends State<StartScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => DetailsScreen(phone: userPhone),
+          builder: (context) => DetailsScreen(),
         ),
       );
     }
@@ -75,7 +76,7 @@ class _StartScreenState extends State<StartScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => DetailsScreen(phone: phone),
+              builder: (context) => BottomNavBar(initialIndex: 2,),
             ),
           );
         }
