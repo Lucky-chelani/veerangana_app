@@ -15,6 +15,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:veerangana/ui/colors.dart';
+import 'donate_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -342,6 +343,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const DonationScreen(),
+                      ),
+                    );
                     // TODO: Implement donation logic or link
                   },
                   style: ElevatedButton.styleFrom(
@@ -417,7 +423,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       _makePhoneCall('100');
                     }),
                     
-                    buildGridButton("SOS", "assets/sos.png", () async {
+                    buildGridButton("SOS", "assets/sosbutton.png", () async {
                       if (userPhone != null) {
                         await _sosService.activateSosMode(userPhone!);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -449,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       isPulsing: _isRecording,
                     ),
                     
-                    buildGridButton("Video Recording", "assets/video.png", () {
+                    buildGridButton("Video Recording", "assets/videobutton.png", () {
                       _recordVideo();
                     }),
                     

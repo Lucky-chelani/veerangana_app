@@ -94,7 +94,10 @@ flutter:
   # example:
   # fonts:
   #   - family: Schyler
-  #     fonts:
+  fonts:
+      - family: Poppins
+        fonts:
+          - asset: assets/fonts/Poppins-Semibold.ttf
   #       - asset: fonts/Schyler-Regular.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic

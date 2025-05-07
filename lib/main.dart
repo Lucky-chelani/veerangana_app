@@ -21,6 +21,7 @@ class WomenSafetyApp extends StatelessWidget {
       title: 'Women Safety App',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      //fontFamily: 'Poppins',
       home: const StartScreen(), // You can add logic here to go to HomeScreen if user is already logged in
     );
   }

@@ -119,7 +119,7 @@ class _StartScreenState extends State<StartScreen> {
           Positioned.fill(
             child: ColorFiltered(
               colorFilter: ColorFilter.mode(
-                const Color.fromARGB(255, 255, 165, 171).withOpacity(0.8),
+                const Color.fromARGB(255, 255, 165, 171).withValues(alpha:0.8),
                 BlendMode.overlay,
               ),
               child: Image.asset(
@@ -150,8 +150,8 @@ class _StartScreenState extends State<StartScreen> {
                 children: [
                   ClipOval(
                     child: Image.asset(
-                      'assets/newlogo.jpg',
-                      height: 60,
+                      'assets/veerlogo.jpg',
+                      height: 70,
                     ),
                   ),
                     // ClipRRect(

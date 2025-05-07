@@ -130,7 +130,7 @@ class _OtpScreenState extends State<OtpScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.lightPeach, Colors.white],
+            colors: [AppColors.lightPeach, AppColors.salmonPink],
           ),
         ),
         child: Padding(
