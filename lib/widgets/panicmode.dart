@@ -97,13 +97,7 @@ class PanicModeService {
             );
             print("SMS sent to $contact. Status: $status");
             
-            await FirebaseFirestore.instance.collection('sent_sms').add({
-              'phoneNumber': contact,
-              'message': message,
-              'timestamp': FieldValue.serverTimestamp(),
-              'status': status,
-              'userPhone': userPhone, // Add the user's phone number for reference
-            });
+
 
             // Show toast message for each SMS sent
             Fluttertoast.showToast(

@@ -20,7 +20,7 @@ class _StartScreenState extends State<StartScreen> {
   @override
   void initState() {
     super.initState();
-    _checkVerificationStatus(); // Check if the user is already verified
+    _checkAuthState(); // Check if the user is already authenticated
   }
 
   @override
@@ -29,18 +29,37 @@ class _StartScreenState extends State<StartScreen> {
     super.dispose();
   }
 
-  Future<void> _checkVerificationStatus() async {
+  Future<void> _checkAuthState() async {
+    // Check for Firebase Auth state first
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    
+    if (currentUser != null) {
+      // User is already logged in with Firebase Auth
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const BottomNavBar(initialIndex: 0),
+          ),
+        );
+      }
+      return;
+    }
+    
+    // If not authenticated with Firebase, check shared preferences as backup
     final prefs = await SharedPreferences.getInstance();
     final isVerified = prefs.getBool('isVerified') ?? false;
+    final userPhone = prefs.getString('userPhone');
 
-    if (isVerified) {
-      final userPhone = prefs.getString('userPhone') ?? '';
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DetailsScreen(),
-        ),
-      );
+    if (isVerified && userPhone != null && userPhone.isNotEmpty) {
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const BottomNavBar(initialIndex: 0),
+          ),
+        );
+      }
     }
   }
 
@@ -64,21 +83,37 @@ class _StartScreenState extends State<StartScreen> {
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: '+91$phone',
       verificationCompleted: (PhoneAuthCredential credential) async {
-        // Automatically sign in the user
-        await FirebaseAuth.instance.signInWithCredential(credential);
+        // Auto-verification completed (typically on Android)
+        try {
+          // Sign in the user
+          await FirebaseAuth.instance.signInWithCredential(credential);
 
-        // Save verification status and phone number
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isVerified', true);
-        await prefs.setString('userPhone', phone);
+          // Save verification status and phone number
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('isVerified', true);
+          await prefs.setString('userPhone', phone);
 
-        if (context.mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BottomNavBar(initialIndex: 2,),
-            ),
-          );
+          if (context.mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const BottomNavBar(initialIndex: 0),
+              ),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Authentication failed: ${e.toString()}"),
+                backgroundColor: AppColors.raspberry,
+              ),
+            );
+          }
+        } finally {
+          setState(() {
+            isSendingOtp = false;
+          });
         }
       },
       verificationFailed: (FirebaseAuthException e) {
@@ -102,11 +137,13 @@ class _StartScreenState extends State<StartScreen> {
             builder: (context) => OtpScreen(
               verificationId: verificationId,
               phone: phone,
+              resendToken: resendToken,
             ),
           ),
         );
       },
       codeAutoRetrievalTimeout: (String verificationId) {},
+      timeout: const Duration(seconds: 60),
     );
   }
 
