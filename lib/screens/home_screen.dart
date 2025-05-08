@@ -14,6 +14,7 @@ import 'dart:io';
 import 'package:veerangana/ui/colors.dart';
 import 'package:veerangana/sakhi/sakhi_chat_screen.dart';
 import 'donate_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -164,6 +165,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Could not make the phone call'),
+          backgroundColor: AppColors.deepBurgundy,
+        ),
+      );
+    }
+  }
+
+  // Open website URL
+  Future<void> _launchWebsite() async {
+    final Uri url = Uri.parse('https://veeranganaa.vercel.app/'); // Replace with your actual website URL
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not open the website'),
           backgroundColor: AppColors.deepBurgundy,
         ),
       );
@@ -414,6 +428,87 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
+  Widget buildWebsiteButton() {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isPressed = _buttonPressStates['website'] ?? false;
+        
+        return GestureDetector(
+          onTapDown: (_) {
+            setState(() => _buttonPressStates['website'] = true);
+          },
+          onTapUp: (_) {
+            setState(() => _buttonPressStates['website'] = false);
+            _provideHapticFeedback('standard');
+            _launchWebsite();
+          },
+          onTapCancel: () {
+            setState(() => _buttonPressStates['website'] = false);
+          },
+          child: TweenAnimationBuilder(
+            tween: Tween<double>(begin: 0, end: isPressed ? 0.95 : 1.0),
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeInOut,
+            builder: (context, scale, child) {
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isPressed 
+                          ? [AppColors.deepBurgundy.withOpacity(0.8), AppColors.raspberry.withOpacity(0.8)]
+                          : [AppColors.deepBurgundy, AppColors.raspberry],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.deepBurgundy.withOpacity(isPressed ? 0.3 : 0.5),
+                        blurRadius: isPressed ? 8 : 15,
+                        offset: isPressed ? const Offset(0, 2) : const Offset(0, 5),
+                        spreadRadius: isPressed ? 0 : 1,
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.language,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        "Visit Our Website",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          letterSpacing: 0.5,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.3),
+                              offset: const Offset(0, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _recorder.closeRecorder();
@@ -619,7 +714,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     }, buttonType: 'standard'),
 
                      buildGridButton("Women Helpline", "assets/helpline.png", () {
-                      _makePhoneCall('109');
+                      _makePhoneCall('1090');
                     }, buttonType: 'emergency'),
                     
                     
@@ -635,6 +730,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ],
                 ),
               ),
+              
+              // Website button at the bottom with padding
+              const SizedBox(height: 16),
+              buildWebsiteButton(),
             ],
           ),
         ),

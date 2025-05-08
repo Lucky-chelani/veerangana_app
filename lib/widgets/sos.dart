@@ -65,8 +65,8 @@ class sosService {
 
     // Start all tasks in parallel
     await Future.wait([
-      _playBeepSound(), // Start playing the beep sound
-      _startVibration(), // Start vibration
+      //_playBeepSound(), // Start playing the beep sound
+      //_startVibration(), // Start vibration
       _sendSmsInParallel(emergencyContacts, message, simSlot), // Start sending SMS
     ]);
 
@@ -80,18 +80,18 @@ class sosService {
 
   /// Play beep sound
 /// Play beep sound in a loop
-  Future<void> _playBeepSound() async {
-    try {
-      if (_audioPlayer == null) {
-        _audioPlayer = AudioPlayer(); // Reinitialize if null
-      }
-      await _audioPlayer!.setAsset('assets/sound.wav'); // Add a beep sound file to your assets
-      await _audioPlayer!.setLoopMode(LoopMode.one); // Repeat the sound indefinitely
-      await _audioPlayer!.play();
-    } catch (e) {
-      print("Error playing beep sound: $e");
-    }
-  }
+  // Future<void> _playBeepSound() async {
+  //   try {
+  //     if (_audioPlayer == null) {
+  //       _audioPlayer = AudioPlayer(); // Reinitialize if null
+  //     }
+  //     await _audioPlayer!.setAsset('assets/sound.wav'); // Add a beep sound file to your assets
+  //     await _audioPlayer!.setLoopMode(LoopMode.one); // Repeat the sound indefinitely
+  //     await _audioPlayer!.play();
+  //   } catch (e) {
+  //     print("Error playing beep sound: $e");
+  //   }
+  // }
 
   /// Deactivate Panic Mode
   void deactivatePanicMode() {
