@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _requestPermissions();
+ 
     _fetchUserPhoneAndTrackLocation();
     _initRecorder();
     _animationController = AnimationController(
@@ -47,30 +47,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-      Future<void> _requestPermissions() async {
-  // List of permissions to request
-  final permissions = [
-    Permission.location,
-    Permission.locationAlways,
-    Permission.sms,
-    Permission.phone,
-    Permission.camera,
-    Permission.microphone,
-    Permission.storage,
-  ];
 
-  // Request each permission
-  for (var permission in permissions) {
-    if (await permission.isDenied) {
-      await permission.request();
-    }
-  }
-
-  // Handle permissions that are permanently denied
-  if (await Permission.locationAlways.isPermanentlyDenied) {
-    openAppSettings(); // Open app settings to manually enable permissions
-  }
-}
 
   Future<void> _initRecorder() async {
     await _recorder.openRecorder();

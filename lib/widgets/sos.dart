@@ -18,9 +18,10 @@ class sosService {
   static const int maxSmsSends = 2;
 
   /// Activate Panic Mode
-  Future<void> activateSosMode(String userPhone) async {
+ Future<void> activateSosMode(String userPhone) async {
   try {
-          _audioPlayer = AudioPlayer();
+    _audioPlayer = AudioPlayer();
+
     // Fetch emergency contacts from Firestore
     final contactsSnapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -62,63 +63,16 @@ class sosService {
 
     int smsCount = 0;
 
-    // Start playing the beep sound in parallel
-    _playBeepSound();
+    // Start all tasks in parallel
+    await Future.wait([
+      _playBeepSound(), // Start playing the beep sound
+      _startVibration(), // Start vibration
+      _sendSmsInParallel(emergencyContacts, message, simSlot), // Start sending SMS
+    ]);
 
-    // Start vibration in parallel
-    Timer.periodic(const Duration(seconds: 5), (timer) async {
-      if (smsCount >= maxSmsSends) {
-        timer.cancel(); // Stop vibration timer after sending all SMS
-      } else {
-        // Vibrate for 1 second with high intensity
-        if (await Vibration.hasVibrator() ?? false) {
-          Vibration.vibrate(duration: 1000, amplitude: 255); // 1000ms, max intensity
-        }
-      }
-    });
-
-    // Send SMS in parallel
-    _smsTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-      if (smsCount >= maxSmsSends) {
-        timer.cancel();
-        deactivatePanicMode(); // Automatically deactivate panic mode
-        print('Maximum number of SMS messages sent. Stopping Panic Mode.');
-        return;
-      }
-
-      // Send SMS to emergency contacts
-      for (String contact in emergencyContacts) {
-        try {
-          String status = await SmsSender.sendSms(
-            phoneNumber: contact,
-            message: message,
-            simSlot: simSlot,
-          );
-          print("SMS sent to $contact. Status: $status");
-
-          // Show toast message for each SMS sent
-          Fluttertoast.showToast(
-            msg: "SMS sent Successfully",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: const Color.fromARGB(255, 69, 9, 32), // Green background
-            textColor: const Color(0xFFFFFFFF), // White text
-            fontSize: 16.0,
-          );
-        } catch (e) {
-          print("Failed to send SMS to $contact: $e");
-        }
-      }
-
-      smsCount++;
-    });
-
-    // Send FCM notification in parallel
-
-
-    print('Panic mode activated. SMS, notifications, vibration, and sound are running in parallel.');
+    print('SOS mode activated. All tasks are running in parallel.');
   } catch (e) {
-    print("Error in Panic Mode: $e");
+    print("Error in SOS Mode: $e");
   }
 }
 
@@ -152,4 +106,59 @@ class sosService {
       _audioPlayer = null; // Set to null for reinitialization
     }
   }
+  Future<void> _startVibration() async {
+  try {
+    Timer.periodic(const Duration(seconds: 5), (timer) async {
+      // Vibrate for 1 second with high intensity
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(duration: 1000, amplitude: 255); // 1000ms, max intensity
+      }
+    });
+  } catch (e) {
+    print("Error starting vibration: $e");
+  }
+}
+Future<void> _sendSmsInParallel(
+    List<String> emergencyContacts, String message, int simSlot) async {
+  try {
+    int smsCount = 0;
+
+    _smsTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+      if (smsCount >= maxSmsSends) {
+        timer.cancel();
+        deactivatePanicMode(); // Automatically deactivate SOS mode
+        print('Maximum number of SMS messages sent. Stopping SOS Mode.');
+        return;
+      }
+
+      // Send SMS to emergency contacts
+      for (String contact in emergencyContacts) {
+        try {
+          String status = await SmsSender.sendSms(
+            phoneNumber: contact,
+            message: message,
+            simSlot: simSlot,
+          );
+          print("SMS sent to $contact. Status: $status");
+
+          // Show toast message for each SMS sent
+          Fluttertoast.showToast(
+            msg: "SMS sent Successfully",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: const Color.fromARGB(255, 69, 9, 32), // Green background
+            textColor: const Color(0xFFFFFFFF), // White text
+            fontSize: 16.0,
+          );
+        } catch (e) {
+          print("Failed to send SMS to $contact: $e");
+        }
+      }
+
+      smsCount++;
+    });
+  } catch (e) {
+    print("Error sending SMS: $e");
+  }
+}
 }

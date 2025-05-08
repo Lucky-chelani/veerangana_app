@@ -18,9 +18,35 @@ void main() async {
   //  print('hello2');
   // await initializeService();
    //  print('hello3');
+
  
   runApp(const WomenSafetyApp());
+       await _requestPermissions();
 
+}
+Future<void> _requestPermissions() async {
+  // List of permissions to request
+  final permissions = [
+    Permission.sms,
+    Permission.location,
+    Permission.locationAlways,
+    Permission.phone,
+    Permission.camera,
+    Permission.microphone,
+    Permission.storage,
+  ];
+
+  // Request each permission
+  for (var permission in permissions) {
+    if (await permission.isDenied) {
+      await permission.request();
+    }
+  }
+
+  // Handle permissions that are permanently denied
+  if (await Permission.locationAlways.isPermanentlyDenied) {
+    openAppSettings(); // Open app settings to manually enable permissions
+  }
 }
 
 class WomenSafetyApp extends StatelessWidget {

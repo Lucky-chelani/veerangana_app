@@ -27,7 +27,6 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
     String userPhone = '';
 
   bool isLoading = false;
-  File? profileImage;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -174,95 +173,95 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
     }
   }
 
-  Future<void> _pickProfileImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-    );
+  // Future<void> _pickProfileImage() async {
+  //   final picker = ImagePicker();
+  //   final pickedFile = await picker.pickImage(
+  //     source: ImageSource.gallery,
+  //     imageQuality: 80,
+  //   );
 
-    if (pickedFile != null) {
-      setState(() {
-        profileImage = File(pickedFile.path);
-      });
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       profileImage = File(pickedFile.path);
+  //     });
 
-      try {
-        // Upload the image to Firebase Storage
-        final storageRef = FirebaseStorage.instance
-            .ref()
-            .child('profile_photos/${userPhone}.jpg');
-        final uploadTask = storageRef.putFile(profileImage!);
+  //     try {
+  //       // Upload the image to Firebase Storage
+  //       final storageRef = FirebaseStorage.instance
+  //           .ref()
+  //           .child('profile_photos/${userPhone}.jpg');
+  //       final uploadTask = storageRef.putFile(profileImage!);
 
-        // Show uploading progress
-        setState(() {
-          isLoading = true;
-        });
+  //       // Show uploading progress
+  //       setState(() {
+  //         isLoading = true;
+  //       });
 
-        // Wait for the upload to complete
-        final snapshot = await uploadTask;
+  //       // Wait for the upload to complete
+  //       final snapshot = await uploadTask;
 
-        // Get the download URL
-        final downloadUrl = await snapshot.ref.getDownloadURL();
+  //       // Get the download URL
+  //       final downloadUrl = await snapshot.ref.getDownloadURL();
 
-        // Save the download URL in Firestore
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userPhone)
-            .update({'profilePhoto': downloadUrl});
+  //       // Save the download URL in Firestore
+  //       await FirebaseFirestore.instance
+  //           .collection('users')
+  //           .doc(userPhone)
+  //           .update({'profilePhoto': downloadUrl});
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Profile photo updated successfully!"),
-              backgroundColor: AppColors.raspberry,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Failed to upload profile photo: $e"),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            isLoading = false;
-          });
-        }
-      }
-    }
-     else {
-    // If no photo is selected, create an empty tag in Firestore
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userPhone)
-          .update({'profilePhoto': ''}); // Save an empty string as a placeholder
+  //       if (mounted) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(
+  //             content: Text("Profile photo updated successfully!"),
+  //             backgroundColor: AppColors.raspberry,
+  //           ),
+  //         );
+  //       }
+  //     } catch (e) {
+  //       if (mounted) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(
+  //             content: Text("Failed to upload profile photo: $e"),
+  //             backgroundColor: Colors.red,
+  //           ),
+  //         );
+  //       }
+  //     } finally {
+  //       if (mounted) {
+  //         setState(() {
+  //           isLoading = false;
+  //         });
+  //       }
+  //     }
+  //   }
+  //    else {
+  //   // If no photo is selected, create an empty tag in Firestore
+  //   try {
+  //     await FirebaseFirestore.instance
+  //         .collection('users')
+  //         .doc(userPhone)
+  //         .update({'profilePhoto': ''}); // Save an empty string as a placeholder
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("No photo selected. Placeholder saved."),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Failed to save placeholder: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-  }
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text("No photo selected. Placeholder saved."),
+  //           backgroundColor: Colors.orange,
+  //         ),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text("Failed to save placeholder: $e"),
+  //           backgroundColor: Colors.red,
+  //         ),
+  //       );
+  //     }
+  //   }
+  // }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -312,15 +311,13 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
                         ],
                       ),
                       child: GestureDetector(
-                        onTap: _pickProfileImage,
                         child: Stack(
                           children: [
                             CircleAvatar(
                               radius: 65,
                               backgroundColor: Colors.white,
-                              backgroundImage: profileImage != null
-                                  ? FileImage(profileImage!)
-                                  : const AssetImage('assets/profile.jpeg') as ImageProvider,
+                              backgroundImage: 
+                                   const AssetImage('assets/profile.jpeg') as ImageProvider,
                             ),
                             Positioned(
                               bottom: 0,

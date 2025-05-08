@@ -80,7 +80,6 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
       'gender': selectedGender,
       'age': ageController.text,
       'address': addressController.text,
-      'profilePhoto': '', // Default empty profile photo
     };
 
     setState(() {
@@ -126,68 +125,68 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
     }
   }
 
-  Future<void> _pickProfileImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-    );
+  // Future<void> _pickProfileImage() async {
+  //   final picker = ImagePicker();
+  //   final pickedFile = await picker.pickImage(
+  //     source: ImageSource.gallery,
+  //     imageQuality: 80,
+  //   );
 
-    if (pickedFile != null) {
-      setState(() {
-        profileImage = File(pickedFile.path);
-      });
+  //   if (pickedFile != null) {
+  //     setState(() {
+  //       profileImage = File(pickedFile.path);
+  //     });
 
-      try {
-        // Upload the image to Firebase Storage
-        final storageRef = FirebaseStorage.instance
-            .ref()
-            .child('profile_photos/${userPhone}.jpg');
-        final uploadTask = storageRef.putFile(profileImage!);
+  //     try {
+  //       // Upload the image to Firebase Storage
+  //       final storageRef = FirebaseStorage.instance
+  //           .ref()
+  //           .child('profile_photos/${userPhone}.jpg');
+  //       final uploadTask = storageRef.putFile(profileImage!);
 
-        // Show uploading progress
-        setState(() {
-          isLoading = true;
-        });
+  //       // Show uploading progress
+  //       setState(() {
+  //         isLoading = true;
+  //       });
 
-        // Wait for the upload to complete
-        final snapshot = await uploadTask;
+  //       // Wait for the upload to complete
+  //       final snapshot = await uploadTask;
 
-        // Get the download URL
-        final downloadUrl = await snapshot.ref.getDownloadURL();
+  //       // Get the download URL
+  //       final downloadUrl = await snapshot.ref.getDownloadURL();
 
-        // Save the download URL in Firestore
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userPhone)
-            .update({'profilePhoto': downloadUrl});
+  //       // Save the download URL in Firestore
+  //       await FirebaseFirestore.instance
+  //           .collection('users')
+  //           .doc(userPhone)
+  //           .update({'profilePhoto': downloadUrl});
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Profile photo uploaded successfully!"),
-              backgroundColor: AppColors.raspberry,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Failed to upload profile photo: $e"),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            isLoading = false;
-          });
-        }
-      }
-    }
-  }
+  //       if (mounted) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(
+  //             content: Text("Profile photo uploaded successfully!"),
+  //             backgroundColor: AppColors.raspberry,
+  //           ),
+  //         );
+  //       }
+  //     } catch (e) {
+  //       if (mounted) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(
+  //             content: Text("Failed to upload profile photo: $e"),
+  //             backgroundColor: Colors.red,
+  //           ),
+  //         );
+  //       }
+  //     } finally {
+  //       if (mounted) {
+  //         setState(() {
+  //           isLoading = false;
+  //         });
+  //       }
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +224,6 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
                   // Profile photo section
                   Center(
                     child: GestureDetector(
-                      onTap: _pickProfileImage,
                       child: Stack(
                         children: [
                           CircleAvatar(
