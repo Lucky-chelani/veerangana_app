@@ -2,13 +2,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:veerangana/firebase_options.dart';
-import 'package:veerangana/screens/shakeDetctionInitializer.dart';
 import 'package:veerangana/screens/start_screen.dart';
 import 'package:veerangana/ui/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:veerangana/sakhi/gemini_service.dart';
 import 'package:veerangana/sakhi/chat_provider.dart';
-import 'package:veerangana/sakhi/app_config.dart'; // Import ShakeDetectionInitializer
+import 'package:veerangana/sakhi/app_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,11 +16,7 @@ void main() async {
   // Request permissions
   await _requestPermissions();
 
-  // Initialize Shake Detection
-  final shakeDetectionInitializer = ShakeDetectionInitializer();
-  await shakeDetectionInitializer.initializeShakeDetection();
-
-  runApp(WomenSafetyApp(shakeDetectionInitializer: shakeDetectionInitializer));
+  runApp(const WomenSafetyApp());
 }
 
 Future<void> _requestPermissions() async {
@@ -52,9 +47,7 @@ Future<void> _requestPermissions() async {
 }
 
 class WomenSafetyApp extends StatelessWidget {
-  final ShakeDetectionInitializer shakeDetectionInitializer;
-
-  const WomenSafetyApp({super.key, required this.shakeDetectionInitializer});
+  const WomenSafetyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

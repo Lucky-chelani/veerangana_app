@@ -3,7 +3,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:veerangana/widgets/panicmode.dart';
 
 class ShakeDetectionService {
-  static const double shakeThreshold = 15.0; // Adjust this value for sensitivity
+  static const double shakeThreshold = 25.0; // Adjust this value for sensitivity
   static const int debounceDuration = 2000; // 2 seconds debounce to avoid multiple triggers
   AccelerometerEvent? _lastEvent;
   Timer? _debounceTimer;
