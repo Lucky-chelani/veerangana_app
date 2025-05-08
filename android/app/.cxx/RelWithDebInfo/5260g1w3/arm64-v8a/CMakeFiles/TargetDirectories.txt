@@ -1,0 +1,2 @@
+D:/veerangana_app/android/app/.cxx/RelWithDebInfo/5260g1w3/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/veerangana_app/android/app/.cxx/RelWithDebInfo/5260g1w3/arm64-v8a/CMakeFiles/rebuild_cache.dir

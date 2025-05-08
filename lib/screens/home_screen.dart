@@ -12,7 +12,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:veerangana/ui/colors.dart';
-import 'donate_screen.dart'; 
+import 'package:veerangana/sakhi/sakhi_chat_screen.dart';
+import 'donate_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -341,10 +342,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             setState(() => _buttonPressStates['donate'] = true);
             _provideHapticFeedback('standard');
             // TODO: Implement donation logic
-                      Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const DonateScreen()),
-          );
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DonateScreen()),
+            );
           },
           onTapCancel: () {
             setState(() => _buttonPressStates['donate'] = false);
@@ -490,12 +491,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Implement donation logic or link
-            //                               Navigator.push(
-            // context,
-            // MaterialPageRoute(builder: (context) => const DonateScreen())
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const DonateScreen()));
-                    
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const DonateScreen()));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.raspberry,
@@ -606,6 +602,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     buildGridButton("Video Recording", "assets/videobutton.png", () {
                       _recordVideo();
                     }, buttonType: 'recording'),
+                    
+                    // Sakhi AI Bot button
+                    buildGridButton("Sakhi AI Bot", "assets/aibot.png", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SakhiChatScreen()),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Launching Sakhi - Your personal AI guide!'),
+                          backgroundColor: AppColors.rosePink,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }, buttonType: 'standard'),
+
+                     buildGridButton("Women Helpline", "assets/helpline.png", () {
+                      _makePhoneCall('109');
+                    }, buttonType: 'emergency'),
+                    
                     
                     buildGridButton("Safe Safar", "assets/travel.png", () {
                       // TODO: Implement safe safar feature
