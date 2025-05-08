@@ -170,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   // Open website URL
   Future<void> _launchWebsite() async {
-    final Uri url = Uri.parse(''); // Replace with your actual website URL
+    final Uri url = Uri.parse('https://veeranganaa.vercel.app/'); // Replace with your actual website URL
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -195,6 +195,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         Vibration.vibrate(duration: 40, amplitude: 150);
       }
     }
+  }
+
+  // Launch Sakhi AI Bot
+  void _launchSakhiChat() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SakhiChatScreen()),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Launching Sakhi - Your personal AI guide!'),
+        backgroundColor: AppColors.rosePink,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   Widget buildGridButton(String label, String assetPath, VoidCallback onTap, {bool isPulsing = false, String buttonType = 'standard'}) {
@@ -337,6 +352,70 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ),
         );
       }
+    );
+  }
+
+  // Sakhi AI Bot floating action button
+  Widget buildSakhiButton() {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isPressed = _buttonPressStates['sakhi'] ?? false;
+        
+        return GestureDetector(
+          onTapDown: (_) {
+            setState(() => _buttonPressStates['sakhi'] = true);
+          },
+          onTapUp: (_) {
+            setState(() => _buttonPressStates['sakhi'] = false);
+            _provideHapticFeedback('standard');
+            _launchSakhiChat();
+          },
+          onTapCancel: () {
+            setState(() => _buttonPressStates['sakhi'] = false);
+          },
+          child: TweenAnimationBuilder(
+            tween: Tween<double>(begin: 0, end: isPressed ? 0.9 : 1.0),
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeInOut,
+            builder: (context, scale, child) {
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: isPressed
+                          ? [AppColors.lightPeach.withValues(alpha:0.9), AppColors.salmonPink.withValues(alpha:0.9)]
+                          : [AppColors.lightPeach, AppColors.salmonPink],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.raspberry.withOpacity(isPressed ? 0.3 : 0.5),
+                        blurRadius: isPressed ? 8 : 15,
+                        offset: isPressed ? const Offset(0, 2) : const Offset(0, 5),
+                        spreadRadius: isPressed ? 0 : 1,
+                      ),
+                    ],
+                  ),
+                  child: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Image.asset(
+                        "assets/aiboticon.png", // Use the same image as the original button
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -563,7 +642,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ],
           ),
+          actions: [
+            // Add a spacer to ensure the Sakhi button is positioned correctly
+            const SizedBox(width: 80),
+          ],
         ),
+      ),
+      // Add the Sakhi floating button
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(top: 32.0, right: 8.0),
+        child: buildSakhiButton(),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -630,6 +719,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ),
                 
                 // Feature Grid with enhanced buttons - using non-scrolling GridView
+                // Removed Sakhi AI Bot from the grid
                 GridView.count(
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
@@ -696,27 +786,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     buildGridButton("Video Recording", "assets/videobutton.png", () {
                       _recordVideo();
                     }, buttonType: 'recording'),
-                    
-                    // Sakhi AI Bot button
-                    buildGridButton("Sakhi AI Bot", "assets/aibot.png", () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SakhiChatScreen()),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Launching Sakhi - Your personal AI guide!'),
-                          backgroundColor: AppColors.rosePink,
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }, buttonType: 'standard'),
 
                     buildGridButton("Women Helpline", "assets/helpline.png", () {
                       _makePhoneCall('1090');
                     }, buttonType: 'emergency'),
-                    
-                    
+
                     buildGridButton("Safe Safar", "assets/travel.png", () {
                       // TODO: Implement safe safar feature
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -726,6 +800,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ),
                       );
                     }),
+
+                    buildGridButton("Self Defense", "assets/self.png", () {
+                      // TODO: Implement self defense feature
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Self Defense Tutorial feature coming soon!'),
+                          backgroundColor: AppColors.rosePink,
+                        ),
+                      );
+                    }),                    
                   ],
                 ),
                 
