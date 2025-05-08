@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:sensors_plus/sensors_plus.dart';
-import 'package:veerangana/widgets/panicmode.dart'; // Import your PanicModeService
+import 'package:veerangana/widgets/panicmode.dart';
 
 class ShakeDetectionService {
   static const double shakeThreshold = 15.0; // Adjust this value for sensitivity
