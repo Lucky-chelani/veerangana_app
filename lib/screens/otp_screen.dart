@@ -12,24 +12,20 @@ import 'package:veerangana/ui/colors.dart';
 class OtpScreen extends StatefulWidget {
   final String verificationId;
   final String phone;
-  final int? resendToken;
 
-  const OtpScreen({
-    super.key, 
-    required this.verificationId, 
-    required this.phone, 
-    this.resendToken
-  });
+  const OtpScreen({super.key, required this.verificationId, required this.phone});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
 }
 
+
+
 class _OtpScreenState extends State<OtpScreen> {
   final TextEditingController otpController = TextEditingController();
   bool isVerifying = false;
   bool canResendOtp = false; // Controls whether the "Resend OTP" button is enabled
-  int timerSeconds = 30; // Countdown timer in seconds
+  int timerSeconds = 60; // Countdown timer in seconds
   Timer? _timer;
 
   @override
@@ -41,7 +37,6 @@ class _OtpScreenState extends State<OtpScreen> {
   @override
   void dispose() {
     _timer?.cancel(); // Cancel the timer when the screen is disposed
-    otpController.dispose();
     super.dispose();
   }
 
@@ -65,194 +60,86 @@ class _OtpScreenState extends State<OtpScreen> {
     });
   }
 
-  void _resendOtp() async {
-    setState(() {
-      isVerifying = true;
-    });
+  void _resendOtp() {
+    // Logic to resend OTP
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("OTP resent successfully!")),
+    );
 
-    try {
-      await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: '+91${widget.phone}',
-        forceResendingToken: widget.resendToken,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          try {
-            await FirebaseAuth.instance.signInWithCredential(credential);
-            await _saveAuthState();
-            
-            if (context.mounted) {
-              _navigateBasedOnUserStatus();
-            }
-          } catch (e) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Authentication failed: ${e.toString()}"),
-                  backgroundColor: AppColors.raspberry,
-                ),
-              );
-            }
-          }
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          setState(() {
-            isVerifying = false;
-          });
-          
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Verification failed: ${e.message}"),
-                backgroundColor: AppColors.raspberry,
-              ),
-            );
-          }
-        },
-        codeSent: (String newVerificationId, int? newResendToken) {
-          setState(() {
-            isVerifying = false;
-          });
-          
-          // Update the verification ID
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("OTP resent successfully!"),
-                backgroundColor: AppColors.rosePink,
-              ),
-            );
-          }
-          
-          // Update the UI state
-          _startTimer();
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {},
-        timeout: const Duration(seconds: 60),
-      );
-    } catch (e) {
-      setState(() {
-        isVerifying = false;
-      });
-      
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Failed to resend OTP: ${e.toString()}"),
-            backgroundColor: AppColors.raspberry,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _saveAuthState() async {
-    // Save verification status and phone number
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isVerified', true);
-    await prefs.setString('userPhone', widget.phone);
-  }
-
-  Future<void> _navigateBasedOnUserStatus() async {
-    try {
-      // Check if user exists in Firestore
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.phone)
-          .get();
-
-      if (context.mounted) {
-        if (userDoc.exists) {
-          // Existing user: Navigate to HomeScreen
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const BottomNavBar(initialIndex: 0),
-            ),
-            (route) => false, // Remove all previous routes
-          );
-        } else {
-          // New user: Navigate to AddDetailsScreen
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddDetailsScreen(),
-            ),
-            (route) => false, // Remove all previous routes
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error checking user data: ${e.toString()}"),
-            backgroundColor: AppColors.raspberry,
-          ),
-        );
-      }
-    }
+    _startTimer(); // Restart the timer after resending OTP
   }
 
   void verifyOtp() async {
-    if (otpController.text.trim().length != 6) {
+  setState(() {
+    isVerifying = true;
+  });
+
+  final credential = PhoneAuthProvider.credential(
+    verificationId: widget.verificationId,
+    smsCode: otpController.text.trim(),
+  );
+
+  try {
+    await FirebaseAuth.instance.signInWithCredential(credential);
+
+    // ✅ Save phone number to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userPhone', widget.phone);
+
+    // Check if the user already exists in Firestore
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.phone)
+        .get();
+
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Please enter a valid 6-digit OTP"),
+          content: Text("Phone number verified!"),
+          backgroundColor: AppColors.rosePink,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Navigate based on whether the user is new or existing
+      if (userDoc.exists) {
+        // Existing user: Navigate to HomeScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const BottomNavBar(initialIndex: 0),
+          ),
+        );
+      } else {
+        // New user: Navigate to AddDetailsScreen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AddDetailsScreen(),
+          ),
+        );
+      }
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Invalid OTP"),
           backgroundColor: AppColors.raspberry,
         ),
       );
-      return;
-    }
-
-    setState(() {
-      isVerifying = true;
-    });
-
-    try {
-      // Create credential
-      final credential = PhoneAuthProvider.credential(
-        verificationId: widget.verificationId,
-        smsCode: otpController.text.trim(),
-      );
-
-      // Sign in with credential
-      final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-      
-      // Save authentication state
-      await _saveAuthState();
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Phone number verified!"),
-            backgroundColor: AppColors.rosePink,
-            duration: Duration(seconds: 2),
-          ),
-        );
-
-        // Navigate based on whether user exists or not
-        await _navigateBasedOnUserStatus();
-      }
-    } catch (e) {
-      setState(() {
-        isVerifying = false;
-      });
-      
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Invalid OTP: ${e.toString()}"),
-            backgroundColor: AppColors.raspberry,
-          ),
-        );
-      }
     }
   }
 
+  setState(() {
+    isVerifying = false;
+  });
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, 
+          automaticallyImplyLeading: false, 
         title: const Text("Verify OTP"),
         backgroundColor: AppColors.rosePink,
         foregroundColor: Colors.white,
@@ -282,8 +169,8 @@ class _OtpScreenState extends State<OtpScreen> {
               const SizedBox(height: 12),
               Text(
                 "Enter OTP sent to +91 ${widget.phone}",
-                style: const TextStyle(
-                  color: AppColors.raspberry,
+                style: TextStyle(
+                  color:AppColors.raspberry,
                   fontSize: 16,
                   fontWeight: FontWeight.w500
                 ),
@@ -296,7 +183,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 style: const TextStyle(color: AppColors.deepBurgundy, fontSize: 18),
                 decoration: InputDecoration(
                   hintText: "Enter 6-digit OTP",
-                  hintStyle: TextStyle(color: AppColors.rosePink.withOpacity(0.7)),
+                  hintStyle: TextStyle(color: AppColors.rosePink.withValues(alpha:0.7)),
                   counterText: "",
                   filled: true,
                   fillColor: Colors.white,
@@ -325,7 +212,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    disabledBackgroundColor: AppColors.raspberry.withOpacity(0.6),
+                    disabledBackgroundColor: AppColors.raspberry.withValues(alpha:0.6),
                   ),
                   child: isVerifying
                       ? const SizedBox(
@@ -350,7 +237,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 child: Column(
                   children: [
                     TextButton(
-                      onPressed: canResendOtp && !isVerifying ? _resendOtp : null,
+                      onPressed: canResendOtp ? _resendOtp : null,
                       style: TextButton.styleFrom(
                         foregroundColor: AppColors.raspberry,
                       ),

@@ -1,9 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/firebase_options.dart';
-import 'package:veerangana/location_service.dart';
 import 'package:veerangana/screens/start_screen.dart';
 import 'package:veerangana/ui/app_theme.dart';
 import 'package:provider/provider.dart';
@@ -13,14 +11,11 @@ import 'package:veerangana/sakhi/app_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // print('hello1');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.android);
-  // print('hello2');
-  // await initializeService();
-  // print('hello3');
-  
+
+  // Request permissions
   await _requestPermissions();
-  
+
   runApp(const WomenSafetyApp());
 }
 
@@ -34,25 +29,26 @@ Future<void> _requestPermissions() async {
     Permission.camera,
     Permission.microphone,
     Permission.storage,
-    //Permission.internet, // Added for Gemini API access
+    Permission.activityRecognition, // Required for shake detection
   ];
-  
+
   // Request each permission
   for (var permission in permissions) {
     if (await permission.isDenied) {
       await permission.request();
     }
   }
-  
+
   // Handle permissions that are permanently denied
-  if (await Permission.locationAlways.isPermanentlyDenied) {
+  if (await Permission.locationAlways.isPermanentlyDenied ||
+      await Permission.activityRecognition.isPermanentlyDenied) {
     openAppSettings(); // Open app settings to manually enable permissions
   }
 }
 
 class WomenSafetyApp extends StatelessWidget {
   const WomenSafetyApp({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -77,7 +73,6 @@ class WomenSafetyApp extends StatelessWidget {
         title: 'Veerangana - Women Safety App',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        //fontFamily: 'Poppins',
         home: const StartScreen(), // You can add logic here to go to HomeScreen if user is already logged in
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/location_service.dart';
 import 'package:veerangana/screens/donation.dart';
+import 'package:veerangana/screens/shakeDetctionInitializer.dart';
 import 'package:veerangana/widgets/panicmode.dart';
 import 'package:veerangana/widgets/sos.dart';
 import 'package:vibration/vibration.dart';
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final sosService _sosService = sosService();
   String? userPhone;
   AnimationController? _animationController;
+    final ShakeDetectionInitializer _shakeDetectionInitializer = ShakeDetectionInitializer();
 
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   bool _isRecording = false;
@@ -43,13 +45,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
  
     _fetchUserPhoneAndTrackLocation();
     _initRecorder();
+        _initializeShakeDetection(); 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
   }
 
-
+  Future<void> _initializeShakeDetection() async {
+    await _shakeDetectionInitializer.initializeShakeDetection();
+  }
 
   Future<void> _initRecorder() async {
     await _recorder.openRecorder();
