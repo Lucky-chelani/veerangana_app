@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:veerangana/sakhi/gemini_service.dart';
 import 'package:veerangana/sakhi/chat_provider.dart';
 import 'package:veerangana/sakhi/app_config.dart';
+import 'package:veerangana/widgets/AuthWrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,7 +74,7 @@ class WomenSafetyApp extends StatelessWidget {
         title: 'Veerangana - Women Safety App',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        home: const StartScreen(), // You can add logic here to go to HomeScreen if user is already logged in
+        home: const AuthWrapper(), // You can add logic here to go to HomeScreen if user is already logged in
       ),
     );
   }
