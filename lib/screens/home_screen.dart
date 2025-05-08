@@ -3,7 +3,6 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/location_service.dart';
 import 'package:veerangana/screens/donation.dart';
-import 'package:veerangana/screens/shakeDetctionInitializer.dart';
 import 'package:veerangana/widgets/panicmode.dart';
 import 'package:veerangana/widgets/sos.dart';
 import 'package:vibration/vibration.dart';
@@ -30,7 +29,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final sosService _sosService = sosService();
   String? userPhone;
   AnimationController? _animationController;
-    final ShakeDetectionInitializer _shakeDetectionInitializer = ShakeDetectionInitializer();
 
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   bool _isRecording = false;
@@ -45,15 +43,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
  
     _fetchUserPhoneAndTrackLocation();
     _initRecorder();
-        _initializeShakeDetection(); 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-  }
-
-  Future<void> _initializeShakeDetection() async {
-    await _shakeDetectionInitializer.initializeShakeDetection();
   }
 
   Future<void> _initRecorder() async {
@@ -72,7 +65,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
-  
   //Video Recording
   Future<void> _recordVideo() async {
     final cameraStatus = await Permission.camera.request();
@@ -178,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   // Open website URL
   Future<void> _launchWebsite() async {
-    final Uri url = Uri.parse('https://veeranganaa.vercel.app/'); // Replace with your actual website URL
+    final Uri url = Uri.parse(''); // Replace with your actual website URL
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -581,67 +573,69 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Donation button
-              Container(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const DonateScreen()));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.raspberry,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      letterSpacing: 0.5,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Donation button
+                Container(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const DonateScreen()));
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.raspberry,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        letterSpacing: 0.5,
+                      ),
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
                     ),
-                    elevation: 6,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.favorite, size: 20),
-                      SizedBox(width: 8),
-                      Text("Donate to Support"),
-                    ],
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Section header
-              const Padding(
-                padding: EdgeInsets.only(left: 8.0, bottom: 12.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Safety Features",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.deepBurgundy,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.favorite, size: 20),
+                        SizedBox(width: 8),
+                        Text("Donate to Support"),
+                      ],
                     ),
                   ),
                 ),
-              ),
-              
-              // Feature Grid with enhanced buttons
-              Expanded(
-                child: GridView.count(
+                
+                const SizedBox(height: 24),
+                
+                // Section header
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0, bottom: 12.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Safety Features",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.deepBurgundy,
+                      ),
+                    ),
+                  ),
+                ),
+                
+                // Feature Grid with enhanced buttons - using non-scrolling GridView
+                GridView.count(
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
+                  shrinkWrap: true, // Important to make grid work in SingleChildScrollView
+                  physics: const NeverScrollableScrollPhysics(), // Disable grid scrolling
                   children: [
                     buildGridButton("Panic Mode", "assets/panic.png", () async {
                       if (userPhone != null) {
@@ -718,7 +712,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       );
                     }, buttonType: 'standard'),
 
-                     buildGridButton("Women Helpline", "assets/helpline.png", () {
+                    buildGridButton("Women Helpline", "assets/helpline.png", () {
                       _makePhoneCall('1090');
                     }, buttonType: 'emergency'),
                     
@@ -734,12 +728,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     }),
                   ],
                 ),
-              ),
-              
-              // Website button at the bottom with padding
-              const SizedBox(height: 16),
-              buildWebsiteButton(),
-            ],
+                
+                // Add extra space and then the website button at the very bottom
+                const SizedBox(height: 40),
+                
+                // Website button section with divider for visual separation
+                Column(
+                  children: [
+                    const Divider(
+                      color: AppColors.deepBurgundy,
+                      thickness: 0.5,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Want to learn more about Veerangana?",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.deepBurgundy,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    buildWebsiteButton(),
+                    const SizedBox(height: 20), // Add bottom padding
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
