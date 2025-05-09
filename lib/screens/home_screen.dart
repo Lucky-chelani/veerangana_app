@@ -178,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   // Open website URL
   Future<void> _launchWebsite() async {
-    final Uri url = Uri.parse('https://veeranganaa.vercel.app/'); // Replace with your actual website URL
+    final Uri url = Uri.parse('https://veerangana.tech/'); // Replace with your actual website URL
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

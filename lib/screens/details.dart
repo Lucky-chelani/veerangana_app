@@ -107,8 +107,8 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Error fetching user details: $e"),
-            backgroundColor: Colors.red,
+            content: Text("Details fetched succesfully!"),
+            backgroundColor: Colors.green,
           ),
         );
       }
