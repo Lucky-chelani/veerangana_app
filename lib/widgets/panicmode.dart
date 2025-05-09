@@ -18,7 +18,7 @@ class PanicModeService {
   bool _isPanicModeActive = false;
 
   // Limit how many times SMS is sent (e.g., 6 messages = 30 seconds if interval is 5s)
-  static const int maxSmsSends = 1;
+  static const int maxSmsSends = 4;
 
   /// Activate Panic Mode
   Future<void> activatePanicMode(String userPhone) async {

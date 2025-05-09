@@ -287,31 +287,34 @@ class _SakhiChatScreenState extends State<SakhiChatScreen> {
             },
           ),
           Expanded(
-            child: TextField(
-              controller: _textController,
-              decoration: InputDecoration(
-                hintText: 'Type a message...',
-                hintStyle: TextStyle(
-                  color: AppColors.deepBurgundy.withOpacity(0.5),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 8.0), // Added bottom padding to the text field
+              child: TextField(
+                controller: _textController,
+                decoration: InputDecoration(
+                  hintText: 'Type a message...',
+                  hintStyle: TextStyle(
+                    color: AppColors.deepBurgundy.withOpacity(0.5),
+                    fontFamily: 'Poppins',
+                  ),
+                  filled: true,
+                  fillColor: AppColors.lightPeach.withOpacity(0.5),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24.0),
+                    borderSide: BorderSide(color: AppColors.raspberry, width: 1.5),
+                  ),
+                ),
+                style: TextStyle(
+                  color: AppColors.deepBurgundy,
                   fontFamily: 'Poppins',
                 ),
-                filled: true,
-                fillColor: AppColors.lightPeach.withOpacity(0.5),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24.0),
-                  borderSide: BorderSide(color: AppColors.raspberry, width: 1.5),
-                ),
+                textCapitalization: TextCapitalization.sentences,
               ),
-              style: TextStyle(
-                color: AppColors.deepBurgundy,
-                fontFamily: 'Poppins',
-              ),
-              textCapitalization: TextCapitalization.sentences,
             ),
           ),
           const SizedBox(width: 8.0),
