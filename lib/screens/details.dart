@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:veerangana/screens/shakeDetctionInitializer.dart';
 import 'package:veerangana/screens/start_screen.dart';
 import 'dart:io';
 import 'package:veerangana/ui/colors.dart';
@@ -23,6 +24,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
   final TextEditingController altPhoneController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+   final ShakeDetectionInitializer _shakeDetectionInitializer = ShakeDetectionInitializer();
 
   String selectedGender = 'Female';
   final List<String> genders = ['Female', 'Male', 'Other'];
@@ -37,6 +39,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
     super.initState();
         _loadUserPhone();
     _fetchUserDetails();
+     _initializeShakeDetection();
 
     // Initialize animation controller
     _animationController = AnimationController(
@@ -49,6 +52,9 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
     );
     _animationController.forward();
   }
+  Future<void> _initializeShakeDetection() async {
+  await _shakeDetectionInitializer.initializeShakeDetection();
+}
 
   @override
   void dispose() {
@@ -57,6 +63,7 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
     altPhoneController.dispose();
     ageController.dispose();
     addressController.dispose();
+    _shakeDetectionInitializer.stopShakeDetection();
     super.dispose();
   }
 
@@ -174,33 +181,37 @@ class _DetailsScreenState extends State<DetailsScreen> with SingleTickerProvider
       }
     }
   }
-  Future<void> _logout() async {
-    try {
-      await FirebaseAuth.instance.signOut();
+ Future<void> _logout() async {
+  try {
+    // Stop Shake Detection
+    _shakeDetectionInitializer.stopShakeDetection();
 
-      // Clear user phone from shared preferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('userPhone');
+    // Clear user phone from shared preferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear all stored preferences
 
-      // Navigate to the StartScreen
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const StartScreen()),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Failed to log out: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    // Sign out from Firebase
+    await FirebaseAuth.instance.signOut();
+
+    // Navigate to the StartScreen
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const StartScreen()),
+        (route) => false,
+      );
+    }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Failed to log out: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
+}
 
   // Future<void> _pickProfileImage() async {
   //   final picker = ImagePicker();

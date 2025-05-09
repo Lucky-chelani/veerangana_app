@@ -3,6 +3,7 @@ import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veerangana/location_service.dart';
 import 'package:veerangana/screens/donation.dart';
+import 'package:veerangana/screens/shakeDetctionInitializer.dart';
 import 'package:veerangana/widgets/panicmode.dart';
 import 'package:veerangana/widgets/sos.dart';
 import 'package:vibration/vibration.dart';
@@ -27,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final LocationService _locationService = LocationService();
   final PanicModeService _panicModeService = PanicModeService();
   final sosService _sosService = sosService();
+  final ShakeDetectionInitializer _shakeDetectionInitializer = ShakeDetectionInitializer();
   String? userPhone;
   AnimationController? _animationController;
 
@@ -43,10 +45,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
  
     _fetchUserPhoneAndTrackLocation();
     _initRecorder();
+   _initializeShakeDetection();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
+  }
+
+  
+  Future<void> _initializeShakeDetection() async {
+    await _shakeDetectionInitializer.initializeShakeDetection();
   }
 
   Future<void> _initRecorder() async {
@@ -400,8 +408,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ],
                   ),
                   child: SizedBox(
-                    width: 60,
-                    height: 60,
+                    width: 80,
+                    height: 80,
                     child: Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Image.asset(
@@ -590,6 +598,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _recorder.closeRecorder();
     _animationController?.dispose();
     super.dispose();
+    _shakeDetectionInitializer.stopShakeDetection();
   }
 
   @override
@@ -649,7 +658,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ),
       ),
       // Add the Sakhi floating button
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(top: 32.0, right: 8.0),
         child: buildSakhiButton(),
