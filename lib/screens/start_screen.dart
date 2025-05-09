@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:veerangana/screens/shakeDetctionInitializer.dart';
 import 'package:veerangana/widgets/custom_bottom_nav.dart';
 import 'otp_screen.dart';
 import 'details.dart';
@@ -15,12 +16,14 @@ class StartScreen extends StatefulWidget {
 
 class _StartScreenState extends State<StartScreen> {
   final TextEditingController phoneController = TextEditingController();
+     final ShakeDetectionInitializer _shakeDetectionInitializer = ShakeDetectionInitializer();
   bool isSendingOtp = false;
 
   @override
   void initState() {
     super.initState();
-    _checkVerificationStatus(); // Check if the user is already verified
+    _checkVerificationStatus();
+    _initializeShakeDetection(); // Check if the user is already verified
   }
 
   @override
@@ -29,6 +32,9 @@ class _StartScreenState extends State<StartScreen> {
     super.dispose();
   }
 
+  Future<void> _initializeShakeDetection() async {
+  _shakeDetectionInitializer.stopShakeDetection();
+}
   Future<void> _checkVerificationStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final isVerified = prefs.getBool('isVerified') ?? false;
