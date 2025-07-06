@@ -33,7 +33,6 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
     super.initState();
     _loadUserPhone();
 
-    // Initialize animation controller
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -58,12 +57,11 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
   Future<void> _loadUserPhone() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      userPhone = prefs.getString('userPhone') ?? ''; // Default to an empty string if not found
+      userPhone = prefs.getString('userPhone') ?? '';
     });
   }
 
   Future<void> _saveDetails() async {
-    // Validate fields
     if (nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -87,11 +85,7 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
     });
 
     try {
-      // Save user details to Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userPhone)
-          .set(userDetails);
+      await FirebaseFirestore.instance.collection('users').doc(userPhone).set(userDetails);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -100,12 +94,10 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
             backgroundColor: AppColors.raspberry,
           ),
         );
-
-        // Navigate to home screen or another screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const BottomNavBar(initialIndex: 0,)),
-      );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const BottomNavBar(initialIndex: 0)),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -125,85 +117,27 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
     }
   }
 
-  // Future<void> _pickProfileImage() async {
-  //   final picker = ImagePicker();
-  //   final pickedFile = await picker.pickImage(
-  //     source: ImageSource.gallery,
-  //     imageQuality: 80,
-  //   );
-
-  //   if (pickedFile != null) {
-  //     setState(() {
-  //       profileImage = File(pickedFile.path);
-  //     });
-
-  //     try {
-  //       // Upload the image to Firebase Storage
-  //       final storageRef = FirebaseStorage.instance
-  //           .ref()
-  //           .child('profile_photos/${userPhone}.jpg');
-  //       final uploadTask = storageRef.putFile(profileImage!);
-
-  //       // Show uploading progress
-  //       setState(() {
-  //         isLoading = true;
-  //       });
-
-  //       // Wait for the upload to complete
-  //       final snapshot = await uploadTask;
-
-  //       // Get the download URL
-  //       final downloadUrl = await snapshot.ref.getDownloadURL();
-
-  //       // Save the download URL in Firestore
-  //       await FirebaseFirestore.instance
-  //           .collection('users')
-  //           .doc(userPhone)
-  //           .update({'profilePhoto': downloadUrl});
-
-  //       if (mounted) {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(
-  //             content: Text("Profile photo uploaded successfully!"),
-  //             backgroundColor: AppColors.raspberry,
-  //           ),
-  //         );
-  //       }
-  //     } catch (e) {
-  //       if (mounted) {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(
-  //             content: Text("Failed to upload profile photo: $e"),
-  //             backgroundColor: Colors.red,
-  //           ),
-  //         );
-  //       }
-  //     } finally {
-  //       if (mounted) {
-  //         setState(() {
-  //           isLoading = false;
-  //         });
-  //       }
-  //     }
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text(
+        title: Text(
           "Add Your Details",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: screenHeight * 0.028,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         elevation: 0,
       ),
       body: Stack(
         children: [
-          // Decorative top curved background
           Container(
-            height: 100,
+            height: screenHeight * 0.12,
             decoration: const BoxDecoration(
               color: AppColors.rosePink,
               borderRadius: BorderRadius.only(
@@ -212,22 +146,20 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
               ),
             ),
           ),
-
-          // Main content
           FadeTransition(
             opacity: _fadeAnimation,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Profile photo section
+                  SizedBox(height: screenHeight * 0.02),
                   Center(
                     child: GestureDetector(
                       child: Stack(
                         children: [
                           CircleAvatar(
-                            radius: 65,
+                            radius: screenWidth * 0.17,
                             backgroundColor: Colors.white,
                             backgroundImage: profileImage != null
                                 ? FileImage(profileImage!)
@@ -237,16 +169,16 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
                             bottom: 0,
                             right: 0,
                             child: Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(screenWidth * 0.025),
                               decoration: BoxDecoration(
                                 color: AppColors.raspberry,
                                 shape: BoxShape.circle,
                                 border: Border.all(color: Colors.white, width: 2),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.camera_alt,
                                 color: Colors.white,
-                                size: 20,
+                                size: screenWidth * 0.045,
                               ),
                             ),
                           ),
@@ -254,67 +186,64 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
                       ),
                     ),
                   ),
-
-                  // Form section
+                  SizedBox(height: screenHeight * 0.03),
                   Card(
                     elevation: 4,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    margin: const EdgeInsets.only(bottom: 24),
+                    margin: EdgeInsets.only(bottom: screenHeight * 0.03),
                     child: Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: EdgeInsets.all(screenWidth * 0.05),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             "Personal Information",
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: screenHeight * 0.022,
                               fontWeight: FontWeight.bold,
                               color: AppColors.deepBurgundy,
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: screenHeight * 0.025),
 
-                          buildLabel("Name"),
-                          buildTextField(nameController, "Enter your name", Icons.person),
+                          buildLabel("Name", screenHeight),
+                          buildTextField(nameController, "Enter your name", Icons.person, screenHeight, screenWidth),
 
-                          buildLabel("Phone Number"),
-                          buildReadOnlyField(userPhone, Icons.phone),
+                          buildLabel("Phone Number", screenHeight),
+                          buildReadOnlyField(userPhone, Icons.phone, screenHeight, screenWidth),
 
-                          buildLabel("Alternative Phone Number"),
-                          buildTextField(altPhoneController, "Enter alternative phone", Icons.phone_android),
+                          buildLabel("Alternative Phone Number", screenHeight),
+                          buildTextField(altPhoneController, "Enter alternative phone", Icons.phone_android, screenHeight, screenWidth),
 
-                          buildLabel("Gender"),
-                          buildDropdown(),
+                          buildLabel("Gender", screenHeight),
+                          buildDropdown(screenHeight),
 
-                          buildLabel("Age"),
-                          buildTextField(ageController, "Enter your age", Icons.calendar_today, TextInputType.number),
+                          buildLabel("Age", screenHeight),
+                          buildTextField(ageController, "Enter your age", Icons.calendar_today, screenHeight, screenWidth, TextInputType.number),
 
-                          buildLabel("Address"),
-                          buildTextField(addressController, "Enter your address", Icons.location_on, TextInputType.multiline),
+                          buildLabel("Address", screenHeight),
+                          buildTextField(addressController, "Enter your address", Icons.location_on, screenHeight, screenWidth, TextInputType.multiline),
                         ],
                       ),
                     ),
                   ),
-
-                  // Save Button
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 30),
+                    padding: EdgeInsets.only(bottom: screenHeight * 0.04),
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: isLoading ? null : _saveDetails,
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: EdgeInsets.symmetric(vertical: screenHeight * 0.022),
                           disabledBackgroundColor: AppColors.salmonPink.withOpacity(0.5),
                         ),
                         child: isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
+                            ? SizedBox(
+                                height: screenHeight * 0.025,
+                                width: screenHeight * 0.025,
+                                child: const CircularProgressIndicator(
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                   strokeWidth: 2,
                                 ),
@@ -330,8 +259,6 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
               ),
             ),
           ),
-
-          // Loading Overlay
           if (isLoading)
             Container(
               color: Colors.black.withOpacity(0.3),
@@ -346,15 +273,15 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
     );
   }
 
-  Widget buildLabel(String text) {
+  Widget buildLabel(String text, double screenHeight) {
     return Padding(
-      padding: const EdgeInsets.only(top: 16.0, bottom: 8),
+      padding: EdgeInsets.only(top: screenHeight * 0.02, bottom: screenHeight * 0.01),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.w600,
           color: AppColors.deepBurgundy,
-          fontSize: 15,
+          fontSize: screenHeight * 0.018,
         ),
       ),
     );
@@ -363,7 +290,9 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
   Widget buildTextField(
     TextEditingController controller,
     String hint,
-    IconData icon, [
+    IconData icon,
+    double screenHeight,
+    double screenWidth, [
     TextInputType? keyboard,
     int maxLines = 1,
   ]) {
@@ -375,12 +304,15 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
         hintText: hint,
         hintStyle: TextStyle(color: AppColors.deepBurgundy.withOpacity(0.5)),
         prefixIcon: Icon(icon, color: AppColors.raspberry),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        contentPadding: EdgeInsets.symmetric(
+          vertical: screenHeight * 0.02,
+          horizontal: screenWidth * 0.045,
+        ),
       ),
     );
   }
 
-  Widget buildReadOnlyField(String value, IconData icon) {
+  Widget buildReadOnlyField(String value, IconData icon, double screenHeight, double screenWidth) {
     return TextField(
       readOnly: true,
       controller: TextEditingController(text: value),
@@ -388,12 +320,15 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
         prefixIcon: Icon(icon, color: AppColors.raspberry),
         filled: true,
         fillColor: AppColors.lightPeach.withOpacity(0.3),
-        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        contentPadding: EdgeInsets.symmetric(
+          vertical: screenHeight * 0.02,
+          horizontal: screenWidth * 0.045,
+        ),
       ),
     );
   }
 
-  Widget buildDropdown() {
+  Widget buildDropdown(double screenHeight) {
     return DropdownButtonFormField<String>(
       value: selectedGender,
       dropdownColor: Colors.white,
@@ -402,9 +337,12 @@ class _AddDetailsScreenState extends State<AddDetailsScreen> with SingleTickerPr
         return DropdownMenuItem(value: gender, child: Text(gender));
       }).toList(),
       onChanged: (value) => setState(() => selectedGender = value!),
-      decoration: const InputDecoration(
-        prefixIcon: Icon(Icons.people, color: AppColors.raspberry),
-        contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.people, color: AppColors.raspberry),
+        contentPadding: EdgeInsets.symmetric(
+          vertical: screenHeight * 0.02,
+          horizontal: 20,
+        ),
       ),
     );
   }
