@@ -136,125 +136,134 @@ class _OtpScreenState extends State<OtpScreen> {
   });
 }
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-          automaticallyImplyLeading: false, 
-        title: const Text("Verify OTP"),
-        backgroundColor: AppColors.rosePink,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.lightPeach, AppColors.salmonPink],
-          ),
+Widget build(BuildContext context) {
+  final Size screenSize = MediaQuery.of(context).size;
+  final double screenHeight = screenSize.height;
+  final double screenWidth = screenSize.width;
+
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      title: const Text("Verify OTP"),
+      backgroundColor: AppColors.rosePink,
+      foregroundColor: Colors.white,
+      elevation: 0,
+    ),
+    body: Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.lightPeach, AppColors.salmonPink],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              Text(
-                "Verification Code",
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: AppColors.deepBurgundy,
-                      fontWeight: FontWeight.bold,
-                    ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: screenHeight * 0.03),
+            Text(
+              "Verification Code",
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: AppColors.deepBurgundy,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            SizedBox(height: screenHeight * 0.015),
+            Text(
+              "Enter OTP sent to +91 ${widget.phone}",
+              style: TextStyle(
+                color: AppColors.raspberry,
+                fontSize: screenHeight * 0.021, // ~16 on normal screen
+                fontWeight: FontWeight.w500,
               ),
-              const SizedBox(height: 12),
-              Text(
-                "Enter OTP sent to +91 ${widget.phone}",
-                style: TextStyle(
-                  color:AppColors.raspberry,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500
+            ),
+            SizedBox(height: screenHeight * 0.04),
+            TextField(
+              controller: otpController,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              style: TextStyle(
+                color: AppColors.deepBurgundy,
+                fontSize: screenHeight * 0.023,
+              ),
+              decoration: InputDecoration(
+                hintText: "Enter 6-digit OTP",
+                hintStyle: TextStyle(
+                  color: AppColors.rosePink.withOpacity(0.7),
+                ),
+                counterText: "",
+                filled: true,
+                fillColor: Colors.white,
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.raspberry, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.salmonPink),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              const SizedBox(height: 30),
-              TextField(
-                controller: otpController,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                style: const TextStyle(color: AppColors.deepBurgundy, fontSize: 18),
-                decoration: InputDecoration(
-                  hintText: "Enter 6-digit OTP",
-                  hintStyle: TextStyle(color: AppColors.rosePink.withValues(alpha:0.7)),
-                  counterText: "",
-                  filled: true,
-                  fillColor: Colors.white,
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.raspberry, width: 2),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.salmonPink),
-                  ),
-                  border: OutlineInputBorder(
+            ),
+            SizedBox(height: screenHeight * 0.04),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isVerifying ? null : verifyOtp,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.raspberry,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  disabledBackgroundColor: AppColors.raspberry.withOpacity(0.6),
                 ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isVerifying ? null : verifyOtp,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.raspberry,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    disabledBackgroundColor: AppColors.raspberry.withValues(alpha:0.6),
-                  ),
-                  child: isVerifying
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          "Verify",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                child: isVerifying
+                    ? SizedBox(
+                        height: screenHeight * 0.025,
+                        width: screenHeight * 0.025,
+                        child: const CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
                         ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Center(
-                child: Column(
-                  children: [
-                    TextButton(
-                      onPressed: canResendOtp ? _resendOtp : null,
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.raspberry,
-                      ),
-                      child: Text(
-                        canResendOtp ? "Resend OTP" : "Resend OTP in $timerSeconds seconds",
-                        style: const TextStyle(
+                      )
+                    : const Text(
+                        "Verify",
+                        style: TextStyle(
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
-                ),
               ),
-            ],
-          ),
+            ),
+            SizedBox(height: screenHeight * 0.02),
+            Center(
+              child: Column(
+                children: [
+                  TextButton(
+                    onPressed: canResendOtp ? _resendOtp : null,
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.raspberry,
+                    ),
+                    child: Text(
+                      canResendOtp ? "Resend OTP" : "Resend OTP in $timerSeconds seconds",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

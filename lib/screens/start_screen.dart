@@ -116,8 +116,12 @@ class _StartScreenState extends State<StartScreen> {
     );
   }
 
- @override
+@override
 Widget build(BuildContext context) {
+  final Size screenSize = MediaQuery.of(context).size;
+  final double screenHeight = screenSize.height;
+  final double screenWidth = screenSize.width;
+
   return Scaffold(
     body: Stack(
       children: [
@@ -129,14 +133,14 @@ Widget build(BuildContext context) {
           ),
         ),
 
-        // Semi-transparent overlay
-
-
         // Foreground rounded container
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.06,
+              vertical: screenHeight * 0.035,
+            ),
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
@@ -154,10 +158,10 @@ Widget build(BuildContext context) {
                 ClipOval(
                   child: Image.asset(
                     'assets/newlogo.jpg',
-                    height: 70,
+                    height: screenHeight * 0.08,
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: screenHeight * 0.02),
                 const Text(
                   "Welcome to your safe space!",
                   style: TextStyle(
@@ -166,20 +170,18 @@ Widget build(BuildContext context) {
                     color: AppColors.deepBurgundy,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: screenHeight * 0.01),
                 const Text(
                   "apki suraksha, hamari zimmedari",
                   style: TextStyle(color: AppColors.rosePink),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.03),
                 TextField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
                   decoration: InputDecoration(
                     hintText: 'Enter mobile number',
-                    hintStyle: const TextStyle(
-                      color: AppColors.rosePink,
-                    ).copyWith(
+                    hintStyle: TextStyle(
                       color: AppColors.rosePink.withOpacity(0.7),
                     ),
                     prefixIcon: const Padding(
@@ -204,7 +206,7 @@ Widget build(BuildContext context) {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.025),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -212,17 +214,19 @@ Widget build(BuildContext context) {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.raspberry,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
+                      padding: EdgeInsets.symmetric(
+                        vertical: screenHeight * 0.018,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       disabledBackgroundColor: AppColors.raspberry.withOpacity(0.6),
                     ),
                     child: isSendingOtp
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
+                        ? SizedBox(
+                            height: screenHeight * 0.025,
+                            width: screenHeight * 0.025,
+                            child: const CircularProgressIndicator(
                               color: Colors.white,
                               strokeWidth: 2,
                             ),

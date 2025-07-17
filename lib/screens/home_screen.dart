@@ -24,35 +24,36 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   final LocationService _locationService = LocationService();
   final PanicModeService _panicModeService = PanicModeService();
   final sosService _sosService = sosService();
-  final ShakeDetectionInitializer _shakeDetectionInitializer = ShakeDetectionInitializer();
+  final ShakeDetectionInitializer _shakeDetectionInitializer =
+      ShakeDetectionInitializer();
   String? userPhone;
   AnimationController? _animationController;
 
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   bool _isRecording = false;
   String? _recordingPath;
-  
+
   // Button press states
   Map<String, bool> _buttonPressStates = {};
 
   @override
   void initState() {
     super.initState();
- 
+
     _fetchUserPhoneAndTrackLocation();
     _initRecorder();
-   _initializeShakeDetection();
+    _initializeShakeDetection();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
   }
 
-  
   Future<void> _initializeShakeDetection() async {
     await _shakeDetectionInitializer.initializeShakeDetection();
   }
@@ -133,10 +134,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     });
 
     print('Recording started at: $path');
-    
+
     // Start pulsing animation when recording
     _animationController?.repeat(reverse: true);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Recording started...'),
@@ -152,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     await _recorder.stopRecorder();
     _animationController?.stop();
     _animationController?.reset();
-    
+
     setState(() => _isRecording = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -178,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   // Open website URL
   Future<void> _launchWebsite() async {
-    final Uri url = Uri.parse('https://veeranganaa.vercel.app/'); // Replace with your actual website URL
+    final Uri url = Uri.parse('https://veerangana.tech/'); // Replace with your actual website URL
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -194,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     if (await Vibration.hasVibrator() ?? false) {
       if (actionType == 'panic' || actionType == 'sos') {
         // Strong feedback for emergency actions
-        Vibration.vibrate(pattern: [0, 100, 50, 100]); 
+        Vibration.vibrate(pattern: [0, 100, 50, 100]);
       } else if (actionType == 'recording') {
         // Medium feedback for recording actions
         Vibration.vibrate(duration: 60, amplitude: 180);
@@ -220,147 +221,162 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget buildGridButton(String label, String assetPath, VoidCallback onTap, {bool isPulsing = false, String buttonType = 'standard'}) {
-    return StatefulBuilder(
-      builder: (context, setState) {
-        bool isPressed = _buttonPressStates[label] ?? false;
-        
-        return GestureDetector(
-          onTapDown: (_) {
-            setState(() => _buttonPressStates[label] = true);
-          },
-          onTapUp: (_) {
-            setState(() => _buttonPressStates[label] = false);
-            _provideHapticFeedback(buttonType);
-            onTap();
-          },
-          onTapCancel: () {
-            setState(() => _buttonPressStates[label] = false);
-          },
-          child: AnimatedBuilder(
-            animation: _animationController ?? const AlwaysStoppedAnimation(0),
-            builder: (context, child) {
-              return TweenAnimationBuilder(
-                tween: Tween<double>(begin: 0, end: isPressed ? 0.95 : 1.0),
-                duration: const Duration(milliseconds: 100),
-                curve: Curves.easeInOut,
-                builder: (context, scale, child) {
-                  return Transform.scale(
-                    scale: scale,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: isPulsing && _animationController != null
-                                ? AppColors.raspberry.withOpacity(0.3 + _animationController!.value * 0.3)
-                                : isPressed 
+  Widget buildGridButton(String label, String assetPath, VoidCallback onTap,
+      {bool isPulsing = false, String buttonType = 'standard'}) {
+    return StatefulBuilder(builder: (context, setState) {
+      bool isPressed = _buttonPressStates[label] ?? false;
+
+      return GestureDetector(
+        onTapDown: (_) {
+          setState(() => _buttonPressStates[label] = true);
+        },
+        onTapUp: (_) {
+          setState(() => _buttonPressStates[label] = false);
+          _provideHapticFeedback(buttonType);
+          onTap();
+        },
+        onTapCancel: () {
+          setState(() => _buttonPressStates[label] = false);
+        },
+        child: AnimatedBuilder(
+          animation: _animationController ?? const AlwaysStoppedAnimation(0),
+          builder: (context, child) {
+            return TweenAnimationBuilder(
+              tween: Tween<double>(begin: 0, end: isPressed ? 0.95 : 1.0),
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeInOut,
+              builder: (context, scale, child) {
+                return Transform.scale(
+                  scale: scale,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: isPulsing && _animationController != null
+                              ? AppColors.raspberry.withOpacity(
+                                  0.3 + _animationController!.value * 0.3)
+                              : isPressed
                                   ? Colors.black.withOpacity(0.05)
                                   : Colors.black.withOpacity(0.15),
-                            blurRadius: isPressed ? 4 : 12,
-                            offset: isPressed ? const Offset(0, 2) : const Offset(0, 6),
-                            spreadRadius: isPressed ? 1 : 2,
+                          blurRadius: isPressed ? 4 : 12,
+                          offset: isPressed
+                              ? const Offset(0, 2)
+                              : const Offset(0, 6),
+                          spreadRadius: isPressed ? 1 : 2,
+                        ),
+                      ],
+                    ),
+                    child: child,
+                  ),
+                );
+              },
+              child: child,
+            );
+          },
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: BorderSide(
+                color: isPulsing
+                    ? AppColors.raspberry
+                    : isPressed
+                        ? AppColors.deepBurgundy.withOpacity(0.4)
+                        : Colors.transparent,
+                width: isPulsing
+                    ? 2.0
+                    : isPressed
+                        ? 1.5
+                        : 0.0,
+              ),
+            ),
+            color: isPressed ? Colors.white.withOpacity(0.9) : Colors.white,
+            elevation: isPressed
+                ? 0
+                : 0, // Control elevation with the container shadow instead
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.02, // Previously: 16.0
+                horizontal: screenWidth * 0.025, // Previously: 10.0
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Container(
+                      height: screenWidth * 0.27, // Previously: 110
+                      width: screenWidth * 0.27,
+                      child: Stack(
+                        children: [
+                          Image.asset(
+                            assetPath,
+                            height: screenWidth * 0.27,
+                            width: screenWidth * 0.27,
+                            fit: BoxFit.cover,
+                          ),
+                          if (isPressed)
+                            Container(
+                              height: 110,
+                              width: 110,
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Flexible(
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.035, // Previously: 14
+
+                        fontWeight: FontWeight.w600,
+                        color: isPressed
+                            ? AppColors.raspberry
+                            : AppColors.deepBurgundy,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+
+                  // Recording indicator
+                  if (label == "Voice Recording" && _isRecording)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            "REC",
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: screenWidth * 0.03, // Previously: 12
+
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
-                      child: child,
                     ),
-                  );
-                },
-                child: child,
-              );
-            },
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-                side: BorderSide(
-                  color: isPulsing 
-                      ? AppColors.raspberry 
-                      : isPressed 
-                          ? AppColors.deepBurgundy.withOpacity(0.4)
-                          : Colors.transparent,
-                  width: isPulsing ? 2.0 : isPressed ? 1.5 : 0.0,
-                ),
-              ),
-              color: isPressed ? Colors.white.withOpacity(0.9) : Colors.white,
-              elevation: isPressed ? 0 : 0, // Control elevation with the container shadow instead
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Container(
-                        height: 110,
-                        width: 110,
-                        child: Stack(
-                          children: [
-                            Image.asset(
-                              assetPath,
-                              height: 110,
-                              width: 110,
-                              fit: BoxFit.cover,
-                            ),
-                            if (isPressed)
-                              Container(
-                                height: 110,
-                                width: 110,
-                                color: Colors.white.withOpacity(0.2),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Flexible(
-                      child: Text(
-                        label,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: isPressed ? AppColors.raspberry : AppColors.deepBurgundy,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ),
-
-                    // Recording indicator
-                    if (label == "Voice Recording" && _isRecording)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Text(
-                              "REC",
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
+                ],
               ),
             ),
           ),
-        );
-      }
-    );
+        ),
+      );
+    });
   }
 
   // Sakhi AI Bot floating action button
@@ -368,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return StatefulBuilder(
       builder: (context, setState) {
         bool isPressed = _buttonPressStates['sakhi'] ?? false;
-        
+
         return GestureDetector(
           onTapDown: (_) {
             setState(() => _buttonPressStates['sakhi'] = true);
@@ -393,25 +409,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
                       colors: isPressed
-                          ? [AppColors.lightPeach.withValues(alpha:0.9), AppColors.salmonPink.withValues(alpha:0.9)]
+                          ? [
+                              AppColors.lightPeach.withValues(alpha: 0.9),
+                              AppColors.salmonPink.withValues(alpha: 0.9)
+                            ]
                           : [AppColors.lightPeach, AppColors.salmonPink],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.raspberry.withOpacity(isPressed ? 0.3 : 0.5),
+                        color: AppColors.raspberry
+                            .withOpacity(isPressed ? 0.3 : 0.5),
                         blurRadius: isPressed ? 8 : 15,
-                        offset: isPressed ? const Offset(0, 2) : const Offset(0, 5),
+                        offset:
+                            isPressed ? const Offset(0, 2) : const Offset(0, 5),
                         spreadRadius: isPressed ? 0 : 1,
                       ),
                     ],
                   ),
                   child: SizedBox(
-                    width: 80,
-                    height: 80,
+                    width: screenWidth * 0.18, // Previously: 80
+                    height: screenWidth * 0.18,
                     child: Padding(
-                      padding: const EdgeInsets.all(10.0),
+                      padding:
+                          EdgeInsets.all(screenWidth * 0.025), // Previously: 10
                       child: Image.asset(
                         "assets/aiboticon.png", // Use the same image as the original button
                         fit: BoxFit.contain,
@@ -431,7 +453,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return StatefulBuilder(
       builder: (context, setState) {
         bool isPressed = _buttonPressStates['donate'] ?? false;
-        
+
         return GestureDetector(
           onTapDown: (_) {
             setState(() => _buttonPressStates['donate'] = true);
@@ -459,8 +481,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   width: double.infinity,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: isPressed 
-                          ? [AppColors.rosePink, AppColors.raspberry.withOpacity(0.8)]
+                      colors: isPressed
+                          ? [
+                              AppColors.rosePink,
+                              AppColors.raspberry.withOpacity(0.8)
+                            ]
                           : [AppColors.rosePink, AppColors.raspberry],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -468,9 +493,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.raspberry.withOpacity(isPressed ? 0.3 : 0.5),
+                        color: AppColors.raspberry
+                            .withOpacity(isPressed ? 0.3 : 0.5),
                         blurRadius: isPressed ? 8 : 15,
-                        offset: isPressed ? const Offset(0, 2) : const Offset(0, 5),
+                        offset:
+                            isPressed ? const Offset(0, 2) : const Offset(0, 5),
                         spreadRadius: isPressed ? 0 : 1,
                       ),
                     ],
@@ -482,7 +509,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       const Icon(
                         Icons.favorite,
                         color: Colors.white,
-                        size: 22,
+                        size: screenWidth * 0.055, // Previously: 22
                       ),
                       const SizedBox(width: 10),
                       Text(
@@ -490,7 +517,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: screenWidth * 0.04, // Previously: 16
+
                           letterSpacing: 0.5,
                           shadows: [
                             Shadow(
@@ -516,7 +544,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return StatefulBuilder(
       builder: (context, setState) {
         bool isPressed = _buttonPressStates['website'] ?? false;
-        
+
         return GestureDetector(
           onTapDown: (_) {
             setState(() => _buttonPressStates['website'] = true);
@@ -540,8 +568,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   width: double.infinity,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: isPressed 
-                          ? [AppColors.deepBurgundy.withOpacity(0.8), AppColors.raspberry.withOpacity(0.8)]
+                      colors: isPressed
+                          ? [
+                              AppColors.deepBurgundy.withOpacity(0.8),
+                              AppColors.raspberry.withOpacity(0.8)
+                            ]
                           : [AppColors.deepBurgundy, AppColors.raspberry],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -549,9 +580,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.deepBurgundy.withOpacity(isPressed ? 0.3 : 0.5),
+                        color: AppColors.deepBurgundy
+                            .withOpacity(isPressed ? 0.3 : 0.5),
                         blurRadius: isPressed ? 8 : 15,
-                        offset: isPressed ? const Offset(0, 2) : const Offset(0, 5),
+                        offset:
+                            isPressed ? const Offset(0, 2) : const Offset(0, 5),
                         spreadRadius: isPressed ? 0 : 1,
                       ),
                     ],
@@ -563,7 +596,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       const Icon(
                         Icons.language,
                         color: Colors.white,
-                        size: 22,
+                        fontSize: screenWidth * 0.04, // Previously: 16
                       ),
                       const SizedBox(width: 10),
                       Text(
@@ -571,7 +604,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: screenWidth * 0.04, // Previously: 16
+
                           letterSpacing: 0.5,
                           shadows: [
                             Shadow(
@@ -603,8 +637,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80),
@@ -632,11 +664,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           centerTitle: true,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: const [
+            children: [
               Text(
                 "Women Safety App",
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: screenWidth * 0.06, // Previously: 24
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   letterSpacing: 0.5,
@@ -646,7 +678,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               Text(
                 "Your safety, our priority",
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: screenWidth * 0.035, // Previously: 14
                   fontWeight: FontWeight.w400,
                   color: Colors.white,
                 ),
@@ -684,7 +716,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const DonateScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const DonateScreen()));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.raspberry,
@@ -692,7 +727,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       textStyle: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: screenWidth * 0.04, // Previously: 16
                         letterSpacing: 0.5,
                       ),
                       elevation: 6,
@@ -710,9 +745,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Section header
                 const Padding(
                   padding: EdgeInsets.only(left: 8.0, bottom: 12.0),
@@ -728,15 +763,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                   ),
                 ),
-                
+
                 // Feature Grid with enhanced buttons - using non-scrolling GridView
                 // Removed Sakhi AI Bot from the grid
                 GridView.count(
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  shrinkWrap: true, // Important to make grid work in SingleChildScrollView
-                  physics: const NeverScrollableScrollPhysics(), // Disable grid scrolling
+                  shrinkWrap:
+                      true, // Important to make grid work in SingleChildScrollView
+                  physics:
+                      const NeverScrollableScrollPhysics(), // Disable grid scrolling
                   children: [
                     buildGridButton("Panic Mode", "assets/panic.png", () async {
                       if (userPhone != null) {
@@ -756,17 +793,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         );
                       }
                     }, buttonType: 'panic'),
-                    
                     buildGridButton("Police Contact", "assets/polic.png", () {
                       _makePhoneCall('100');
                     }, buttonType: 'emergency'),
-                    
                     buildGridButton("SOS", "assets/sosbutton.png", () async {
                       if (userPhone != null) {
                         await _sosService.activateSosMode(userPhone!);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('SOS message sent to emergency contacts.'),
+                            content:
+                                Text('SOS message sent to emergency contacts.'),
                             backgroundColor: AppColors.raspberry,
                           ),
                         );
@@ -779,9 +815,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         );
                       }
                     }, buttonType: 'sos'),
-                    
                     buildGridButton(
-                      "Voice Recording", 
+                      "Voice Recording",
                       "assets/audioe.png",
                       () async {
                         if (_isRecording) {
@@ -793,15 +828,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       isPulsing: _isRecording,
                       buttonType: 'recording',
                     ),
-                    
-                    buildGridButton("Video Recording", "assets/videobutton.png", () {
+                    buildGridButton("Video Recording", "assets/videobutton.png",
+                        () {
                       _recordVideo();
                     }, buttonType: 'recording'),
-
-                    buildGridButton("Women Helpline", "assets/helpline.png", () {
+                    buildGridButton("Women Helpline", "assets/helpline.png",
+                        () {
                       _makePhoneCall('1091');
                     }, buttonType: 'emergency'),
-
                     buildGridButton("Safe Safar", "assets/travel.png", () {
                       // TODO: Implement safe safar feature
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -811,22 +845,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ),
                       );
                     }),
-
                     buildGridButton("Self Defense", "assets/self.png", () {
                       // TODO: Implement self defense feature
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Self Defense Tutorial feature coming soon!'),
+                          content: Text(
+                              'Self Defense Tutorial feature coming soon!'),
                           backgroundColor: AppColors.rosePink,
                         ),
                       );
-                    }),                    
+                    }),
                   ],
                 ),
-                
+
                 // Add extra space and then the website button at the very bottom
                 const SizedBox(height: 40),
-                
+
                 // Website button section with divider for visual separation
                 Column(
                   children: [

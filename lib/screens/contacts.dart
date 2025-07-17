@@ -138,13 +138,13 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                       ),
                       
                       // Title
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(bottom: 16.0),
                         child: Text(
                           "Select Contact",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                            fontSize: MediaQuery.of(context).size.width * 0.045,
                             color: AppColors.deepBurgundy,
                           ),
                         ),
@@ -171,7 +171,9 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                               borderRadius: BorderRadius.circular(15),
                               borderSide: const BorderSide(color: AppColors.raspberry, width: 1.5),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: MediaQuery.of(context).size.height * 0.015,
+                            ),
                           ),
                           onChanged: (query) {
                             searchQuery = query.toLowerCase();
@@ -206,7 +208,8 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                             }
 
                             return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                              margin: EdgeInsets.symmetric( horizontal: MediaQuery.of(context).size.width * 0.03,
+  vertical: MediaQuery.of(context).size.height * 0.005,),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
@@ -225,8 +228,8 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                                       ? ClipOval(
                                           child: Image.memory(
                                             contact.photo!,
-                                            width: 40,
-                                            height: 40,
+                                            width: MediaQuery.of(context).size.width * 0.1,
+                                            height: MediaQuery.of(context).size.width * 0.1,
                                             fit: BoxFit.cover,
                                           ),
                                         )
@@ -240,14 +243,16 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
                                 ),
                                 title: Text(
                                   contact.displayName ?? "Unknown",
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w500,
+                                    fontSize: MediaQuery.of(context).size.width * 0.04,
                                     color: AppColors.deepBurgundy,
                                   ),
                                 ),
                                 subtitle: Text(
                                   phone,
                                   style: TextStyle(
+                                    fontSize: MediaQuery.of(context).size.width * 0.035,
                                     color: AppColors.deepBurgundy.withValues(alpha:0.7),
                                   ),
                                 ),
@@ -348,291 +353,297 @@ class _EmergencyContactScreenState extends State<EmergencyContactScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text(
-          "Emergency Contacts",
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+Widget build(BuildContext context) {
+  final mediaQuery = MediaQuery.of(context);
+  final screenWidth = mediaQuery.size.width;
+  final screenHeight = mediaQuery.size.height;
+
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      title: Text(
+        "Emergency Contacts",
+        style: TextStyle(
+          fontSize: screenWidth * 0.055,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+      backgroundColor: AppColors.rosePink,
+      elevation: 0,
+      iconTheme: const IconThemeData(color: Colors.white),
+    ),
+    body: Stack(
+      children: [
+        // Background decoration
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.rosePink.withAlpha(25),
+                  AppColors.lightPeach,
+                ],
+              ),
+            ),
           ),
         ),
-        backgroundColor: AppColors.rosePink,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Stack(
-        children: [
-          // Background decoration
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    AppColors.rosePink.withValues(alpha:0.1),
-                    AppColors.lightPeach,
+        SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(screenWidth * 0.05),
+            child: Column(
+              children: [
+                // Header section
+                Container(
+                  padding: EdgeInsets.all(screenWidth * 0.04),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(screenWidth * 0.04),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(15),
+                        blurRadius: screenWidth * 0.025,
+                        offset: Offset(0, screenHeight * 0.002),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(screenWidth * 0.025),
+                        decoration: BoxDecoration(
+                          color: AppColors.rosePink.withAlpha(25),
+                          borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                        ),
+                        child: Icon(
+                          Icons.safety_divider_rounded,
+                          size: screenWidth * 0.08,
+                          color: AppColors.raspberry,
+                        ),
+                      ),
+                      SizedBox(width: screenWidth * 0.04),
+                      Expanded(
+                        child: Text(
+                          "Add trusted contacts who will be notified in case of emergency",
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.038,
+                            color: AppColors.deepBurgundy,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                SizedBox(height: screenHeight * 0.025),
+
+                // Add from contacts button
+                ElevatedButton.icon(
+                  onPressed: _askContactsPermission,
+                  icon: Icon(Icons.contact_phone, size: screenWidth * 0.06),
+                  label: Text(
+                    "Add from Phone Contacts",
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.042,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size.fromHeight(screenHeight * 0.07),
+                    backgroundColor: AppColors.raspberry,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(screenWidth * 0.04),
+                    ),
+                    elevation: 2,
+                  ),
+                ),
+
+                SizedBox(height: screenHeight * 0.025),
+
+                // Title for contacts list
+                Row(
+                  children: [
+                    Text(
+                      "Added Contacts",
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.045,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.deepBurgundy,
+                      ),
+                    ),
+                    SizedBox(width: screenWidth * 0.025),
+                    Expanded(
+                      child: Container(
+                        height: 1,
+                        color: AppColors.salmonPink.withAlpha(80),
+                      ),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: screenHeight * 0.015),
+
+                // Display selected contacts
+                Expanded(
+                  child: contacts.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.contact_phone_outlined,
+                                size: screenWidth * 0.18,
+                                color: AppColors.salmonPink.withAlpha(100),
+                              ),
+                              SizedBox(height: screenHeight * 0.02),
+                              Text(
+                                "No emergency contacts added yet",
+                                style: TextStyle(
+                                  color: AppColors.salmonPink,
+                                  fontSize: screenWidth * 0.04,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: contacts.length,
+                          itemBuilder: (context, index) {
+                            final contact = contacts[index];
+                            return Container(
+                              margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(screenWidth * 0.04),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.rosePink.withAlpha(30),
+                                    blurRadius: screenWidth * 0.03,
+                                    offset: Offset(0, screenHeight * 0.002),
+                                  ),
+                                ],
+                              ),
+                              child: ListTile(
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: screenWidth * 0.04,
+                                  vertical: screenHeight * 0.01,
+                                ),
+                                leading: CircleAvatar(
+                                  backgroundColor: AppColors.rosePink.withAlpha(50),
+                                  radius: screenWidth * 0.07,
+                                  child: Text(
+                                    contact['name']![0].toUpperCase(),
+                                    style: TextStyle(
+                                      color: AppColors.deepBurgundy,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: screenWidth * 0.05,
+                                    ),
+                                  ),
+                                ),
+                                title: Text(
+                                  contact['name']!,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: screenWidth * 0.045,
+                                    color: AppColors.deepBurgundy,
+                                  ),
+                                ),
+                                subtitle: Padding(
+                                  padding: EdgeInsets.only(top: screenHeight * 0.005),
+                                  child: Text(
+                                    contact['phone']!,
+                                    style: TextStyle(
+                                      color: AppColors.deepBurgundy.withAlpha(180),
+                                      fontSize: screenWidth * 0.038,
+                                    ),
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                  icon: Icon(
+                                    Icons.delete_outline_rounded,
+                                    color: AppColors.raspberry,
+                                    size: screenWidth * 0.07,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      contacts.removeAt(index);
+                                    });
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+
+                SizedBox(height: screenHeight * 0.025),
+
+                // Save button
+                ElevatedButton(
+                  onPressed: isLoading ? null : saveContactsToFirestore,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.raspberry,
+                    disabledBackgroundColor: AppColors.raspberry.withAlpha(120),
+                    foregroundColor: Colors.white,
+                    minimumSize: Size.fromHeight(screenHeight * 0.07),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(screenWidth * 0.04),
+                    ),
+                    elevation: 3,
+                  ),
+                  child: Text(
+                    "Save & Continue",
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.05,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Loading indicator
+        if (isLoading)
+          Container(
+            color: Colors.black.withAlpha(80),
+            child: Center(
+              child: Container(
+                padding: EdgeInsets.all(screenWidth * 0.06),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(screenWidth * 0.04),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.raspberry),
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    Text(
+                      "Saving contacts...",
+                      style: TextStyle(
+                        color: AppColors.deepBurgundy,
+                        fontWeight: FontWeight.w500,
+                        fontSize: screenWidth * 0.042,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Header section
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha:0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.rosePink.withValues(alpha:0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.safety_divider_rounded,
-                            size: 30,
-                            color: AppColors.raspberry,
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-                        const Expanded(
-                          child: Text(
-                            "Add trusted contacts who will be notified in case of emergency",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.deepBurgundy,
-                              height: 1.3,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 20),
-
-                  // Add from contacts button
-                  ElevatedButton.icon(
-                    onPressed: _askContactsPermission,
-                    icon: const Icon(Icons.contact_phone),
-                    label: const Text(
-                      "Add from Phone Contacts",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(55),
-                      backgroundColor: AppColors.raspberry,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      elevation: 2,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Title for contacts list
-                  Row(
-                    children: [
-                      const Text(
-                        "Added Contacts",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.deepBurgundy,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Container(
-                          height: 1,
-                          color: AppColors.salmonPink.withValues(alpha: 0.5),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Display selected contacts
-                  Expanded(
-                    child: contacts.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.contact_phone_outlined,
-                                  size: 70,
-                                  color: AppColors.salmonPink.withValues(alpha: 0.5),
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  "No emergency contacts added yet",
-                                  style: TextStyle(
-                                    color: AppColors.salmonPink,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: contacts.length,
-                            itemBuilder: (context, index) {
-                              final contact = contacts[index];
-                              return Container(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(15),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.rosePink.withValues(alpha:0.1),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  leading: CircleAvatar(
-                                    backgroundColor: AppColors.rosePink.withValues(alpha:0.2),
-                                    radius: 25,
-                                    child: Text(
-                                      contact['name']![0].toUpperCase(),
-                                      style: const TextStyle(
-                                        color: AppColors.deepBurgundy,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                  ),
-                                  title: Text(
-                                    contact['name']!,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                      color: AppColors.deepBurgundy,
-                                    ),
-                                  ),
-                                  subtitle: Padding(
-                                    padding: const EdgeInsets.only(top: 4),
-                                    child: Text(
-                                      contact['phone']!,
-                                      style: TextStyle(
-                                        color: AppColors.deepBurgundy.withValues(alpha:0.7),
-                                      ),
-                                    ),
-                                  ),
-                                  trailing: IconButton(
-                                    icon: const Icon(
-                                      Icons.delete_outline_rounded,
-                                      color: AppColors.raspberry,
-                                      size: 26,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        contacts.removeAt(index);
-                                      });
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Save button
-                  ElevatedButton(
-                    onPressed: isLoading ? null : saveContactsToFirestore,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.raspberry,
-                      disabledBackgroundColor: AppColors.raspberry.withValues(alpha:0.5),
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(55),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      elevation: 3,
-                    ),
-                    child: const Text(
-                      "Save & Continue",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Loading indicator
-          if (isLoading)
-            Container(
-              color: Colors.black.withValues(alpha:0.3),
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.raspberry),
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        "Saving contacts...",
-                        style: TextStyle(
-                          color: AppColors.deepBurgundy,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+      ],
+    ),
+  );
+}
 }
 
 // class EmergencyContactScreen extends StatefulWidget {
