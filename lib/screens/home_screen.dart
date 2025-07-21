@@ -14,7 +14,6 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:veerangana/ui/colors.dart';
 import 'package:veerangana/sakhi/sakhi_chat_screen.dart';
-import 'donate_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -192,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   // Provide haptic feedback based on action type
   void _provideHapticFeedback(String actionType) async {
-    if (await Vibration.hasVibrator() ?? false) {
+    if (await Vibration.hasVibrator() == true) {
       if (actionType == 'panic' || actionType == 'sos') {
         // Strong feedback for emergency actions
         Vibration.vibrate(pattern: [0, 100, 50, 100]);
@@ -222,7 +221,9 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget buildGridButton(String label, String assetPath, VoidCallback onTap,
-      {bool isPulsing = false, String buttonType = 'standard'}) {
+      BuildContext context, {bool isPulsing = false, String buttonType = 'standard'}) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
     return StatefulBuilder(builder: (context, setState) {
       bool isPressed = _buttonPressStates[label] ?? false;
 
@@ -316,8 +317,8 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           if (isPressed)
                             Container(
-                              height: 110,
-                              width: 110,
+                              height: MediaQuery.of(context).size.width * 0.27,
+                              width: MediaQuery.of(context).size.width * 0.27,
                               color: Colors.white.withOpacity(0.2),
                             ),
                         ],
@@ -358,7 +359,7 @@ class _HomeScreenState extends State<HomeScreen>
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Text(
+                          Text(
                             "REC",
                             style: TextStyle(
                               color: Colors.red,
@@ -380,7 +381,8 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   // Sakhi AI Bot floating action button
-  Widget buildSakhiButton() {
+  Widget buildSakhiButton(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
     return StatefulBuilder(
       builder: (context, setState) {
         bool isPressed = _buttonPressStates['sakhi'] ?? false;
@@ -449,7 +451,8 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget buildDonateButton() {
+  Widget buildDonateButton(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
     return StatefulBuilder(
       builder: (context, setState) {
         bool isPressed = _buttonPressStates['donate'] ?? false;
@@ -506,7 +509,7 @@ class _HomeScreenState extends State<HomeScreen>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.favorite,
                         color: Colors.white,
                         size: screenWidth * 0.055, // Previously: 22
@@ -540,7 +543,8 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget buildWebsiteButton() {
+  Widget buildWebsiteButton(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
     return StatefulBuilder(
       builder: (context, setState) {
         bool isPressed = _buttonPressStates['website'] ?? false;
@@ -593,10 +597,10 @@ class _HomeScreenState extends State<HomeScreen>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.language,
                         color: Colors.white,
-                        fontSize: screenWidth * 0.04, // Previously: 16
+                        size: screenWidth * 0.04, // Previously: 16
                       ),
                       const SizedBox(width: 10),
                       Text(
@@ -637,6 +641,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80),
@@ -695,7 +700,7 @@ class _HomeScreenState extends State<HomeScreen>
       floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(top: 32.0, right: 8.0),
-        child: buildSakhiButton(),
+        child: buildSakhiButton(context),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -725,7 +730,7 @@ class _HomeScreenState extends State<HomeScreen>
                       backgroundColor: AppColors.raspberry,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      textStyle: const TextStyle(
+                      textStyle: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: screenWidth * 0.04, // Previously: 16
                         letterSpacing: 0.5,
@@ -792,10 +797,10 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         );
                       }
-                    }, buttonType: 'panic'),
+                    }, context, buttonType: 'panic'),
                     buildGridButton("Police Contact", "assets/polic.png", () {
                       _makePhoneCall('100');
-                    }, buttonType: 'emergency'),
+                    }, context, buttonType: 'emergency'),
                     buildGridButton("SOS", "assets/sosbutton.png", () async {
                       if (userPhone != null) {
                         await _sosService.activateSosMode(userPhone!);
@@ -814,7 +819,7 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                         );
                       }
-                    }, buttonType: 'sos'),
+                    }, context, buttonType: 'sos'),
                     buildGridButton(
                       "Voice Recording",
                       "assets/audioe.png",
@@ -825,17 +830,18 @@ class _HomeScreenState extends State<HomeScreen>
                           await _startRecording();
                         }
                       },
+                      context,
                       isPulsing: _isRecording,
                       buttonType: 'recording',
                     ),
                     buildGridButton("Video Recording", "assets/videobutton.png",
                         () {
                       _recordVideo();
-                    }, buttonType: 'recording'),
+                    }, context, buttonType: 'recording'),
                     buildGridButton("Women Helpline", "assets/helpline.png",
                         () {
                       _makePhoneCall('1091');
-                    }, buttonType: 'emergency'),
+                    }, context, buttonType: 'emergency'),
                     buildGridButton("Safe Safar", "assets/travel.png", () {
                       // TODO: Implement safe safar feature
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -844,7 +850,7 @@ class _HomeScreenState extends State<HomeScreen>
                           backgroundColor: AppColors.rosePink,
                         ),
                       );
-                    }),
+                    }, context),
                     buildGridButton("Self Defense", "assets/self.png", () {
                       // TODO: Implement self defense feature
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -854,7 +860,7 @@ class _HomeScreenState extends State<HomeScreen>
                           backgroundColor: AppColors.rosePink,
                         ),
                       );
-                    }),
+                    }, context),
                   ],
                 ),
 
@@ -878,7 +884,7 @@ class _HomeScreenState extends State<HomeScreen>
                       ),
                     ),
                     const SizedBox(height: 16),
-                    buildWebsiteButton(),
+                    buildWebsiteButton(context),
                     const SizedBox(height: 20), // Add bottom padding
                   ],
                 ),

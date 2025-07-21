@@ -9,10 +9,15 @@ import 'package:veerangana/sakhi/gemini_service.dart';
 import 'package:veerangana/sakhi/chat_provider.dart';
 import 'package:veerangana/sakhi/app_config.dart';
 import 'package:veerangana/widgets/AuthWrapper.dart';
+import 'package:veerangana/config/environment_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.android);
+  
+  // Initialize environment configuration
+  await EnvironmentConfig.initialize();
+  
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Request permissions
   await _requestPermissions();

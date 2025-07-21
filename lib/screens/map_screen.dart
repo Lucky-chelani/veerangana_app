@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:veerangana/ui/colors.dart';
+import '../config/environment_config.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -24,8 +25,7 @@ class _MapScreenState extends State<MapScreen> {
   bool isMapExpanded = false;
 
   List<Map<String, dynamic>> hospitals = [];
-  final String googleApiKey =
-      "AIzaSyCgB0H3PXjukpvtmS5fIhf4kLZFr3jl5KU"; // Replace with your Google API Key
+  String get googleApiKey => EnvironmentConfig.googleMapsApiKey;
 
   @override
   void initState() {

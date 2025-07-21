@@ -1,6 +1,8 @@
+import '../config/environment_config.dart';
+
 class AppConfig {
   // Gemini API Configuration
-  static const String geminiApiKey = 'AIzaSyBJy-bkrrEazq-6tAjKFcisS0PMdVU5sMw'; // Replace with your actual API key
+  static String get geminiApiKey => EnvironmentConfig.geminiApiKey;
   
   // Sakhi Chatbot Configuration
   static const String sakhiName = 'Sakhi';
@@ -14,6 +16,6 @@ class AppConfig {
   static const String emergencyChildHelplineNumber = '1098';
   
   // App Information
-  static const String appName = 'Veerangana';
-  static const String appVersion = '1.0.0';
+  static String get appName => EnvironmentConfig.appName;
+  static String get appVersion => EnvironmentConfig.appVersion;
 }

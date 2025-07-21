@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'config/environment_config.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -40,49 +41,49 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCnOIOdlGEr27-YC4oeIINBTZ6j9tNfROY',
-    appId: '1:50583172701:web:4269a114af2d04840effb4',
-    messagingSenderId: '50583172701',
-    projectId: 'veerangana-a8a70',
-    authDomain: 'veerangana-a8a70.firebaseapp.com',
-    storageBucket: 'veerangana-a8a70.firebasestorage.app',
-    measurementId: 'G-C7YX7QYSKY',
+  static FirebaseOptions get web => FirebaseOptions(
+    apiKey: EnvironmentConfig.firebaseWebApiKey,
+    appId: EnvironmentConfig.firebaseWebAppId,
+    messagingSenderId: EnvironmentConfig.firebaseMessagingSenderId,
+    projectId: EnvironmentConfig.firebaseProjectId,
+    authDomain: EnvironmentConfig.firebaseAuthDomain,
+    storageBucket: EnvironmentConfig.firebaseStorageBucket,
+    measurementId: EnvironmentConfig.firebaseMeasurementIdWeb,
   );
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAb-9mLUwtQmHd9KsPE2xS5_PlVM3B1KhM',
-    appId: '1:50583172701:android:0ae02ec812a8171d0effb4',
-    messagingSenderId: '50583172701',
-    projectId: 'veerangana-a8a70',
-    storageBucket: 'veerangana-a8a70.firebasestorage.app',
+  static FirebaseOptions get android => FirebaseOptions(
+    apiKey: EnvironmentConfig.firebaseAndroidApiKey,
+    appId: EnvironmentConfig.firebaseAndroidAppId,
+    messagingSenderId: EnvironmentConfig.firebaseMessagingSenderId,
+    projectId: EnvironmentConfig.firebaseProjectId,
+    storageBucket: EnvironmentConfig.firebaseStorageBucket,
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDWDNcdjxG4AzerGA4m7RLPWnNxbvfgOiM',
-    appId: '1:50583172701:ios:64feb503c993c02f0effb4',
-    messagingSenderId: '50583172701',
-    projectId: 'veerangana-a8a70',
-    storageBucket: 'veerangana-a8a70.firebasestorage.app',
-    iosBundleId: 'com.example.veerangana',
+  static FirebaseOptions get ios => FirebaseOptions(
+    apiKey: EnvironmentConfig.firebaseIosApiKey,
+    appId: EnvironmentConfig.firebaseIosAppId,
+    messagingSenderId: EnvironmentConfig.firebaseMessagingSenderId,
+    projectId: EnvironmentConfig.firebaseProjectId,
+    storageBucket: EnvironmentConfig.firebaseStorageBucket,
+    iosBundleId: EnvironmentConfig.firebaseIosBundleId,
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDWDNcdjxG4AzerGA4m7RLPWnNxbvfgOiM',
-    appId: '1:50583172701:ios:64feb503c993c02f0effb4',
-    messagingSenderId: '50583172701',
-    projectId: 'veerangana-a8a70',
-    storageBucket: 'veerangana-a8a70.firebasestorage.app',
-    iosBundleId: 'com.example.veerangana',
+  static FirebaseOptions get macos => FirebaseOptions(
+    apiKey: EnvironmentConfig.firebaseIosApiKey,
+    appId: EnvironmentConfig.firebaseIosAppId,
+    messagingSenderId: EnvironmentConfig.firebaseMessagingSenderId,
+    projectId: EnvironmentConfig.firebaseProjectId,
+    storageBucket: EnvironmentConfig.firebaseStorageBucket,
+    iosBundleId: EnvironmentConfig.firebaseIosBundleId,
   );
 
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCnOIOdlGEr27-YC4oeIINBTZ6j9tNfROY',
+  static FirebaseOptions get windows => FirebaseOptions(
+    apiKey: EnvironmentConfig.firebaseWebApiKey,
     appId: '1:50583172701:web:f9ffc33cf6da25680effb4',
-    messagingSenderId: '50583172701',
-    projectId: 'veerangana-a8a70',
-    authDomain: 'veerangana-a8a70.firebaseapp.com',
-    storageBucket: 'veerangana-a8a70.firebasestorage.app',
-    measurementId: 'G-Y76VL9WJZ0',
+    messagingSenderId: EnvironmentConfig.firebaseMessagingSenderId,
+    projectId: EnvironmentConfig.firebaseProjectId,
+    authDomain: EnvironmentConfig.firebaseAuthDomain,
+    storageBucket: EnvironmentConfig.firebaseStorageBucket,
+    measurementId: EnvironmentConfig.firebaseMeasurementIdWindows,
   );
 }
