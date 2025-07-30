@@ -1,4 +1,4 @@
-package com.example.veerangana
+package com.lucky.veerangana
 
 import io.flutter.embedding.android.FlutterActivity
 

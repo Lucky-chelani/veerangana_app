@@ -1,34 +1,63 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-            <uses-permission android:name="android.permission.INTERNET" />
-            <uses-permission android:name="android.permission.READ_CONTACTS" />
-            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-            <uses-permission android:name="android.permission.CALL_PHONE" />
-            <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-            <uses-permission android:name="android.permission.SEND_SMS" />
-            <uses-permission android:name="android.permission.RECORD_AUDIO" />
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-                android:maxSdkVersion="28"/>
-            <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
-            <uses-permission android:name="android.permission.CAMERA"/>
-            <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-             <uses-permission android:name="android.permission.WAKE_LOCK" />
-             <uses-permission android:name="android.permission.VIBRATE" />
-            <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!-- Internet permission for Firebase, API calls, and online services -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    
+    <!-- Location permissions for emergency services and safety features -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" 
+        android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    
+    <!-- Contact permissions for emergency contact management -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    
+    <!-- Phone permissions for emergency calling -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    
+    <!-- SMS permission for emergency messaging -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    
+    <!-- Camera permission for evidence recording -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    
+    <!-- Audio recording for evidence and voice messages -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    
+    <!-- Storage permissions for saving emergency data and evidence -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    
+    <!-- Service permissions for background safety monitoring -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
+    <!-- Device permissions for safety features -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    
+    <!-- Network state for connectivity checks -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    <!-- Boot permission for safety service restart -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
 
     
     <application
-        android:label="veerangana"
-        android:name="${applicationName}"
+        android:label="Veerangana - Women Safety"
         android:icon="@mipmap/ic_launcher"
         android:requestLegacyExternalStorage="true">
 
-
+        <!-- Google Maps API Key from environment variable -->
         <meta-data
-    android:name="com.google.android.geo.API_KEY"
-    android:value="AIzaSyCgB0H3PXjukpvtmS5fIhf4kLZFr3jl5KU" />
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${GOOGLE_MAPS_API_KEY}" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
